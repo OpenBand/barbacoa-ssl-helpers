@@ -1,10 +1,10 @@
-# SSL Helpers
+# Barbacoa SSL Helpers
 
 Helpers for convenient usage of OpenSSL features on C++ and a little more
 
 # Requirements
 
-OpenSSL from 1.0.2g. Tested on 1.1.1
+OpenSSL from 1.0.2g. Tested on 1.1.1f
 
 # Platforms
 
