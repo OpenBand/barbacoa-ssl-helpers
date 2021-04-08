@@ -31,6 +31,7 @@ namespace tests {
     }
 
     boost::filesystem::path create_binary_data_file(const size_t file_size);
+    boost::filesystem::path create_readable_data_file(const size_t file_size, const std::string& file_name = {});
 
     void print_current_test_name();
 
