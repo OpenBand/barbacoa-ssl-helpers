@@ -63,17 +63,17 @@ using salted_key_type = std::pair<std::string /*encryption key*/, std::string /*
 salted_key_type aes_create_salted_key(const std::string& user_key);
 std::string aes_get_salted_key(const std::string& user_key, const std::string& salt);
 
-//Encrypt data at once. It can be provide authenticity of data with custom ctreate_check_tag function
+//Encrypt data at once. It can be provide authenticity of data with custom create_check_tag function
 //
 
 std::string aes_encrypt(const std::string& key, const std::string& plain_data);
 std::string aes_encrypt(const std::string& key, const std::string& plain_data,
-                        std::function<std::string(const std::string& key, const std::string& cipherdata)> ctreate_check_tag,
+                        std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
                         std::string& check_tag);
 
-std::string aes_decrypt(const std::string& key, const std::string& cipherdata);
-std::string aes_decrypt(const std::string& key, const std::string& cipherdata, const std::string& check_tag,
-                        std::function<std::string(const std::string& key, const std::string& cipherdata)> ctreate_check_tag);
+std::string aes_decrypt(const std::string& key, const std::string& cipher_data);
+std::string aes_decrypt(const std::string& key, const std::string& cipher_data, const std::string& check_tag,
+                        std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag);
 
 //Encrypt file with key and providing check tag.
 //Use ADD like file type marker.
@@ -85,5 +85,15 @@ std::string aes_decrypt(const std::string& key, const std::string& cipherdata, c
 // return check tag
 std::string aes_encrypt_file(const std::string& path, const std::string& key, const std::string& add = {});
 void aes_decrypt_file(const std::string& path, const std::string& key, const std::string& tag, const std::string& add = {});
+
+//Method to transfer encrypted data with key
+//Warning:
+//  Cipher, session data ans instant key must
+//  pass via different data channels.
+//  Especially cipher and session data.
+
+using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
+flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& instant_key, const std::string& add = {});
+std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& instant_key, const std::string& session_data, const std::string& add = {});
 
 } // namespace ssl_helpers

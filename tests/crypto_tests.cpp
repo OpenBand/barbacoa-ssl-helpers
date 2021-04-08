@@ -28,11 +28,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_GT(data.size(), 16);
 
-        auto ciphertext = aes_encrypt(key, data);
+        auto cipher_data = aes_encrypt(key, data);
 
-        BOOST_REQUIRE(!ciphertext.empty());
+        BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, ciphertext);
+        auto data_ = aes_decrypt(key, cipher_data);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -49,11 +49,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_LT(data.size(), 16);
 
-        auto ciphertext = aes_encrypt(key, data);
+        auto cipher_data = aes_encrypt(key, data);
 
-        BOOST_REQUIRE(!ciphertext.empty());
+        BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, ciphertext);
+        auto data_ = aes_decrypt(key, cipher_data);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -74,23 +74,23 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_GT(data.size(), 16);
 
-        auto ctreate_check_tag = [](const std::string& key, const std::string& cipherdata) {
+        auto create_check_tag = [](const std::string& key, const std::string& cipher_data) {
             std::string ss;
-            ss.reserve(key.size() + cipherdata.size());
+            ss.reserve(key.size() + cipher_data.size());
 
             ss.append(key);
-            ss.append(cipherdata);
+            ss.append(cipher_data);
 
             return create_ripemd160(ss);
         };
 
         std::string tag;
-        auto ciphertext = aes_encrypt(key, data, ctreate_check_tag, tag);
+        auto cipher_data = aes_encrypt(key, data, create_check_tag, tag);
 
         BOOST_REQUIRE(!tag.empty());
-        BOOST_REQUIRE(!ciphertext.empty());
+        BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, ciphertext, tag, ctreate_check_tag);
+        auto data_ = aes_decrypt(key, cipher_data, tag, create_check_tag);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -381,11 +381,11 @@ namespace tests {
             DUMP_STR(to_base64(cipher_key));
             DUMP_STR(salt);
 
-            auto ciphertext = aes_encrypt(cipher_key, data);
+            auto cipher_data = aes_encrypt(cipher_key, data);
 
-            BOOST_REQUIRE(!ciphertext.empty());
+            BOOST_REQUIRE(!cipher_data.empty());
 
-            auto data_ = aes_decrypt(aes_get_salted_key(key, from_base64(salt)), ciphertext);
+            auto data_ = aes_decrypt(aes_get_salted_key(key, from_base64(salt)), cipher_data);
 
             BOOST_REQUIRE(!data_.empty());
 

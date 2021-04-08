@@ -39,7 +39,7 @@ namespace impl {
         void set_add(const char* additional_authenticated_data, size_t len);
 
         //Encoding. It can be called multiple times if necessary
-        size_t process(const char* plain_text_chunk, size_t len, char* cipher_text_chunk);
+        size_t process(const char* plain_chunk, size_t len, char* cipher_chunk);
 
         //finish encryption and get check tag
         void finalize(gcm_tag_type&);
@@ -68,7 +68,7 @@ namespace impl {
         void set_add(const char* additional_authenticated_data, size_t len);
 
         //Decoding. It can be called multiple times to process all encrypted block
-        size_t process(const char* cipher_text_chunk, size_t len, char* plain_text_chunk);
+        size_t process(const char* cipher_chunk, size_t len, char* plain_chunk);
 
         //finish decryption and check by tag
         void finalize(gcm_tag_type&);
@@ -93,14 +93,14 @@ namespace impl {
         aes_block();
 
         //Key and init value (initialization vector) are set in common complicated 512 passphrase
-        std::vector<char> encrypt(const sha512& key, const char* plain_text, size_t len);
-        std::vector<char> decrypt(const sha512& key, const char* cipher_text, size_t len);
+        std::vector<char> encrypt(const sha512& key, const char* plain_data, size_t len);
+        std::vector<char> decrypt(const sha512& key, const char* cipher_data, size_t len);
 
     private:
-        unsigned encrypt(unsigned char* plaintext, int plaintext_len, unsigned char* key,
-                         unsigned char* iv, unsigned char* ciphertext);
-        unsigned decrypt(unsigned char* ciphertext, int ciphertext_len, unsigned char* key,
-                         unsigned char* iv, unsigned char* plaintext);
+        unsigned encrypt(unsigned char* plain_data, int len, unsigned char* key,
+                         unsigned char* iv, unsigned char* cipher_data);
+        unsigned decrypt(unsigned char* cipher_data, int len, unsigned char* key,
+                         unsigned char* iv, unsigned char* plain_data);
     };
 
 } // namespace impl

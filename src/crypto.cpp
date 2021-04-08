@@ -7,6 +7,8 @@
 #include "sha256.h"
 #include "inplace.h"
 
+#include <sstream>
+
 namespace ssl_helpers {
 
 aes_encryption_stream::aes_encryption_stream(const std::string& key, const std::string& add)
@@ -171,7 +173,7 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data)
 }
 
 std::string aes_encrypt(const std::string& key, const std::string& plain_data,
-                        std::function<std::string(const std::string& key, const std::string& cipherdata)> ctreate_check_tag,
+                        std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
                         std::string& check_tag)
 {
     try
@@ -182,7 +184,7 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data,
             std::vector<char> result = cipher.encrypt(impl::sha512::hash(key), plain_data.data(), plain_data.size());
             result_str = { result.data(), result.size() };
         }
-        check_tag = ctreate_check_tag(key, result_str);
+        check_tag = create_check_tag(key, result_str);
         return result_str;
     }
     catch (std::exception& e)
@@ -193,12 +195,12 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data,
     return {};
 }
 
-std::string aes_decrypt(const std::string& key, const std::string& cipherdata)
+std::string aes_decrypt(const std::string& key, const std::string& cipher_data)
 {
     try
     {
         impl::aes_block cipher;
-        std::vector<char> result = cipher.decrypt(impl::sha512::hash(key), cipherdata.data(), cipherdata.size());
+        std::vector<char> result = cipher.decrypt(impl::sha512::hash(key), cipher_data.data(), cipher_data.size());
         return { result.data(), result.size() };
     }
     catch (std::exception& e)
@@ -209,17 +211,17 @@ std::string aes_decrypt(const std::string& key, const std::string& cipherdata)
     return {};
 }
 
-std::string aes_decrypt(const std::string& key, const std::string& cipherdata, const std::string& check_tag,
-                        std::function<std::string(const std::string& key, const std::string& cipherdata)> ctreate_check_tag)
+std::string aes_decrypt(const std::string& key, const std::string& cipher_data, const std::string& check_tag,
+                        std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag)
 {
     try
     {
         impl::aes_block cipher;
-        auto input_check_tag = ctreate_check_tag(key, cipherdata);
+        auto input_check_tag = create_check_tag(key, cipher_data);
         if (check_tag != input_check_tag)
             return {};
 
-        std::vector<char> result = cipher.decrypt(impl::sha512::hash(key), cipherdata.data(), cipherdata.size());
+        std::vector<char> result = cipher.decrypt(impl::sha512::hash(key), cipher_data.data(), cipher_data.size());
         return { result.data(), result.size() };
     }
     catch (std::exception& e)
@@ -279,6 +281,64 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const std
     {
         SSL_HELPERS_ASSERT(false, e.what());
     }
+}
+
+flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& instant_key, const std::string& add)
+{
+    try
+    {
+        std::string session_data;
+
+        auto salted_key = aes_create_salted_key(instant_key);
+
+
+        std::string cipher_data;
+        std::string tag;
+
+        {
+            std::stringstream ss;
+
+            aes_encryption_stream stream;
+
+            ss << stream.start(salted_key.first, add);
+            ss << stream.encrypt(plain_data);
+            tag = stream.finalize();
+
+            cipher_data = ss.str();
+        }
+
+        {
+            std::stringstream ss;
+
+            ss << add;
+            ss << salted_key.second;
+            ss << tag;
+
+            session_data = ss.str();
+        }
+
+        return std::make_pair(cipher_data, session_data);
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ASSERT(false, e.what());
+    }
+    return {};
+}
+
+std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& instant_key, const std::string& session_data, const std::string& add)
+{
+    try
+    {
+        // TODO
+
+        return {};
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ASSERT(false, e.what());
+    }
+    return {};
 }
 
 } // namespace ssl_helpers
