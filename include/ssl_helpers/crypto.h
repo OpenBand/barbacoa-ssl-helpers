@@ -32,9 +32,7 @@ public:
     //finalize encryption session and create tag
     std::string finalize();
 
-    //helpers to navigate in stream
-    size_t last_add_size() const;
-    size_t last_ecryption_size() const;
+    //info
     size_t tag_size() const;
 
 private:

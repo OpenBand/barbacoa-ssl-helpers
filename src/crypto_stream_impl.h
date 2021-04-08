@@ -84,16 +84,12 @@ namespace impl {
         std::string encrypt(const std::string& plain_chunk);
         std::string finalize();
 
-        size_t last_add_size() const;
-        size_t last_ecryption_size() const;
         size_t tag_size() const;
 
     private:
         aes_stream_sm<aes_stream_encryptor> _sm;
         std::string _key_shadow;
         std::string _add;
-        size_t _last_add_size = 0;
-        size_t _last_ecryption_size = 0;
     };
 
     class aes_decryption_stream_impl

@@ -60,14 +60,6 @@ std::string aes_encryption_stream::finalize()
     return {};
 }
 
-size_t aes_encryption_stream::last_add_size() const
-{
-    return _impl->last_add_size();
-}
-size_t aes_encryption_stream::last_ecryption_size() const
-{
-    return _impl->last_ecryption_size();
-}
 size_t aes_encryption_stream::tag_size() const
 {
     return _impl->tag_size();

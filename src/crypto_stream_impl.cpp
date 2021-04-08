@@ -16,33 +16,17 @@ namespace impl {
     {
         SSL_HELPERS_ASSERT(!key.empty() || !_key_shadow.empty(), "Key required");
 
-        _last_ecryption_size = 0;
-
-        auto result = _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
-        _last_add_size = result.size();
-        return result;
+        return _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
     }
 
     std::string aes_encryption_stream_impl::encrypt(const std::string& plain_chunk)
     {
-        auto result = _sm.process(plain_chunk);
-        _last_ecryption_size += result.size();
-        return result;
+        return _sm.process(plain_chunk);
     }
 
     std::string aes_encryption_stream_impl::finalize()
     {
         return _sm.finalize();
-    }
-
-    size_t aes_encryption_stream_impl::last_add_size() const
-    {
-        return _last_add_size;
-    }
-
-    size_t aes_encryption_stream_impl::last_ecryption_size() const
-    {
-        return _last_ecryption_size;
     }
 
     size_t aes_encryption_stream_impl::tag_size() const
