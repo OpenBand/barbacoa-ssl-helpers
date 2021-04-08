@@ -56,18 +56,16 @@ namespace impl {
             return { result.data(), result.size() };
         }
 
-        std::string finalize(const std::string& input_tag = {})
+        gcm_tag_type finalize(const gcm_tag_type& input_tag = {})
         {
             SSL_HELPERS_ASSERT(_state == state::processing, "Invalid state");
 
             _state = state::finalized;
 
-            gcm_tag_type tag;
-            if (!input_tag.empty())
-                tag = create_from_string<gcm_tag_type>(input_tag.data(), input_tag.size());
+            gcm_tag_type tag = input_tag;
             _context.finalize(tag);
 
-            return to_string(tag);
+            return tag;
         }
 
     private:
@@ -82,9 +80,9 @@ namespace impl {
 
         std::string start(const std::string& key, const std::string& add);
         std::string encrypt(const std::string& plain_chunk);
-        std::string finalize();
+        gcm_tag_type finalize();
 
-        size_t tag_size() const;
+        static size_t tag_size();
 
     private:
         aes_stream_sm<aes_stream_encryptor> _sm;
@@ -99,7 +97,7 @@ namespace impl {
 
         void start(const std::string& key, const std::string& add);
         std::string decrypt(const std::string& cipher_chunk);
-        void finalize(const std::string& tag);
+        void finalize(const gcm_tag_type& tag);
 
     private:
         aes_stream_sm<aes_stream_decryptor> _sm;

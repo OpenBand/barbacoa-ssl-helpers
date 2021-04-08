@@ -24,12 +24,12 @@ namespace impl {
         return _sm.process(plain_chunk);
     }
 
-    std::string aes_encryption_stream_impl::finalize()
+    gcm_tag_type aes_encryption_stream_impl::finalize()
     {
         return _sm.finalize();
     }
 
-    size_t aes_encryption_stream_impl::tag_size() const
+    size_t aes_encryption_stream_impl::tag_size()
     {
         return std::tuple_size<gcm_tag_type>::value;
     }
@@ -51,7 +51,7 @@ namespace impl {
         return _sm.process(cipher_chunk);
     }
 
-    void aes_decryption_stream_impl::finalize(const std::string& tag)
+    void aes_decryption_stream_impl::finalize(const gcm_tag_type& tag)
     {
         _sm.finalize(tag);
     }

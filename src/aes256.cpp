@@ -14,7 +14,7 @@ namespace impl {
 
         SSL_HELPERS_ASSERT(len >= std::tuple_size<aes_array_type>::value, "Insufficient size of initializing data");
 
-        std::memcpy(result.data(), pstr, std::tuple_size<aes_array_type>::value);
+        std::memcpy(result.data(), pstr, result.size());
 
         return result;
     }
@@ -22,31 +22,31 @@ namespace impl {
     template <class aes_array_type>
     std::string to_string_impl(const aes_array_type& data)
     {
-        return { data.data(), std::tuple_size<aes_array_type>::value };
+        return { data.data(), data.size() };
     }
 
     template <>
-    gcm_iv_type create_from_string<gcm_iv_type>(const char* pstr, size_t len)
+    aes_512bit_type create_from_string<aes_512bit_type>(const char* pstr, size_t len)
     {
-        return create_from_string_impl<gcm_iv_type>(pstr, len);
+        return create_from_string_impl<aes_512bit_type>(pstr, len);
     }
 
     template <>
-    gcm_key_type create_from_string<gcm_key_type>(const char* pstr, size_t len)
+    aes_256bit_type create_from_string<aes_256bit_type>(const char* pstr, size_t len)
     {
-        return create_from_string_impl<gcm_key_type>(pstr, len);
+        return create_from_string_impl<aes_256bit_type>(pstr, len);
     }
 
     template <>
-    std::string to_string<gcm_iv_type>(const gcm_iv_type& data)
+    std::string to_string<aes_512bit_type>(const aes_512bit_type& data)
     {
-        return to_string_impl<gcm_iv_type>(data);
+        return to_string_impl<aes_512bit_type>(data);
     }
 
     template <>
-    std::string to_string<gcm_key_type>(const gcm_key_type& data)
+    std::string to_string<aes_256bit_type>(const aes_256bit_type& data)
     {
-        return to_string_impl<gcm_key_type>(data);
+        return to_string_impl<aes_256bit_type>(data);
     }
 
     aes_stream_encryptor::aes_stream_encryptor()

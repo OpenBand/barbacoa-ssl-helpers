@@ -3,6 +3,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <array>
 
 namespace ssl_helpers {
 
@@ -10,6 +11,20 @@ namespace impl {
     class aes_encryption_stream_impl;
     class aes_decryption_stream_impl;
 } // namespace impl
+
+//Base types
+
+using aes_256bit_type = std::array<char, 16>;
+
+using aes_tag_type = aes_256bit_type;
+
+using aes_salt_type = aes_256bit_type;
+using salted_key_type = std::pair<std::string /*encryption key*/, aes_salt_type /*random salt*/>;
+
+std::string aes_to_string(const aes_256bit_type&);
+aes_256bit_type aes_from_string(const std::string&);
+
+using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
 
 //Create tagged data stream that includes tag data of encrypted stream
 //and optionally ADD (Additional Authenticated Data)
@@ -30,10 +45,7 @@ public:
     std::string start(const std::string& key = {}, const std::string& add = {});
     std::string encrypt(const std::string& plain_chunk);
     //finalize encryption session and create tag
-    std::string finalize();
-
-    //info
-    size_t tag_size() const;
+    aes_tag_type finalize();
 
 private:
     std::unique_ptr<impl::aes_encryption_stream_impl> _impl;
@@ -50,7 +62,7 @@ public:
     void start(const std::string& key = {}, const std::string& add = {});
     std::string decrypt(const std::string& cipher_chunk);
     //finalize decryption session and check input tag
-    void finalize(const std::string& tag);
+    void finalize(const aes_tag_type& tag);
 
 private:
     std::unique_ptr<impl::aes_decryption_stream_impl> _impl;
@@ -59,9 +71,9 @@ private:
 //Improve crypto resistance by using PBKDF2
 //
 
-using salted_key_type = std::pair<std::string /*encryption key*/, std::string /*random salt*/>;
 salted_key_type aes_create_salted_key(const std::string& user_key);
 std::string aes_get_salted_key(const std::string& user_key, const std::string& salt);
+std::string aes_get_salted_key(const std::string& user_key, const aes_salt_type& salt);
 
 //Encrypt data at once. It can be provide authenticity of data with custom create_check_tag function
 //
@@ -83,8 +95,8 @@ std::string aes_decrypt(const std::string& key, const std::string& cipher_data, 
 //
 
 // return check tag
-std::string aes_encrypt_file(const std::string& path, const std::string& key, const std::string& add = {});
-void aes_decrypt_file(const std::string& path, const std::string& key, const std::string& tag, const std::string& add = {});
+aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& add = {});
+void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& add = {});
 
 //Method to transfer encrypted data with key
 //Warning:
@@ -92,8 +104,7 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const std
 //  pass via different data channels.
 //  Especially cipher and session data.
 
-using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
-flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& instant_key, const std::string& add = {});
-std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& instant_key, const std::string& session_data, const std::string& add = {});
+flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& user_key, const std::string& add = {}, bool add_garbage = false);
+std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& user_key, const std::string& session_data, const std::string& add = {});
 
 } // namespace ssl_helpers
