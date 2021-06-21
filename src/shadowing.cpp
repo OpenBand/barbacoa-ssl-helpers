@@ -13,7 +13,7 @@ namespace impl {
     using key_type = uint64_t;
     constexpr size_t key_sz = sizeof(key_type);
 
-    std::string encode_nose_xor(const std::string& secret, key_type noise)
+    std::string encode_noise_xor(const std::string& secret, key_type noise)
     {
         SSL_HELPERS_ASSERT(!secret.empty());
 
@@ -39,7 +39,7 @@ namespace impl {
         return result;
     }
 
-    std::string decode_nose_xor(const std::string& crypted)
+    std::string decode_noise_xor(const std::string& crypted)
     {
         SSL_HELPERS_ASSERT(!crypted.empty() && crypted.size() > key_sz);
 
@@ -64,12 +64,12 @@ namespace impl {
 
 std::string nxor_encode(const std::string& secret)
 {
-    return impl::encode_nose_xor(secret, static_cast<impl::key_type>(create_random()));
+    return impl::encode_noise_xor(secret, static_cast<impl::key_type>(create_random()));
 }
 
 std::string nxor_decode(const std::string& shadowed_secret)
 {
-    return impl::decode_nose_xor(shadowed_secret);
+    return impl::decode_noise_xor(shadowed_secret);
 }
 
 } // namespace ssl_helpers
