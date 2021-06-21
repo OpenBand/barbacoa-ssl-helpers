@@ -4,7 +4,7 @@
 #include "ssl_helpers_defines.h"
 #include "hash_helper.h"
 
-#include <string.h>
+#include <cstring>
 #include <cmath>
 
 namespace ssl_helpers {
@@ -89,23 +89,23 @@ namespace impl {
     }
     bool operator>=(const sha256& h1, const sha256& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
     }
     bool operator>(const sha256& h1, const sha256& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
     }
     bool operator<(const sha256& h1, const sha256& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
     }
     bool operator!=(const sha256& h1, const sha256& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
     }
     bool operator==(const sha256& h1, const sha256& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
     }
 
     uint32_t sha256::approx_log_32() const

@@ -4,13 +4,13 @@
 #include "ssl_helpers_defines.h"
 #include "hash_helper.h"
 
-#include <string.h>
+#include <cstring>
 #include <cmath>
 
 namespace ssl_helpers {
 namespace impl {
 
-    sha512::sha512() { memset(_hash, 0, sizeof(_hash)); }
+    sha512::sha512() { std::memset(_hash, 0, sizeof(_hash)); }
     sha512::sha512(const std::string& hex_str)
     {
         from_hex(hex_str, reinterpret_cast<char*>(_hash), sizeof(_hash));
@@ -77,23 +77,23 @@ namespace impl {
     }
     bool operator>=(const sha512& h1, const sha512& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
     }
     bool operator>(const sha512& h1, const sha512& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
     }
     bool operator<(const sha512& h1, const sha512& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
     }
     bool operator!=(const sha512& h1, const sha512& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
     }
     bool operator==(const sha512& h1, const sha512& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
     }
 
 } // namespace impl

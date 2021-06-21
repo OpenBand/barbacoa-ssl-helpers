@@ -5,7 +5,7 @@
 #include <openssl/rand.h>
 
 #include <chrono>
-#include <memory.h>
+#include <cstring>
 
 #include "openssl.h"
 
@@ -48,17 +48,17 @@ uint64_t create_random(const uint64_t offset)
 
     if (offset)
     {
-        memcpy(buf, &offset, SZ);
+        std::memcpy(buf, &offset, SZ);
         auto entropy = offset % SZ;
         RAND_add(buf, SZ, entropy);
-        memset(buf, 0, SZ);
+        std::memset(buf, 0, SZ);
     }
 
     if (RAND_bytes(buf, SZ) != 1)
         return 0;
 
     uint64_t rnd = 0;
-    memcpy(&rnd, buf, SZ);
+    std::memcpy(&rnd, buf, SZ);
     return rnd;
 }
 } // namespace ssl_helpers

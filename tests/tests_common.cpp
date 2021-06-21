@@ -21,12 +21,12 @@ namespace tests {
         size_t total = 0;
         while (true)
         {
-            memset(buff, 0, sizeof(buff));
+            std::memset(buff, 0, sizeof(buff));
             auto* pbuff_offset = buff;
             for (auto cj = 0; cj < BUFF_SZ / sizeof(float); ++cj)
             {
                 float fl = 9999 + ci++;
-                memcpy(pbuff_offset, &fl, sizeof(float));
+                std::memcpy(pbuff_offset, &fl, sizeof(float));
                 pbuff_offset += sizeof(float);
             }
 

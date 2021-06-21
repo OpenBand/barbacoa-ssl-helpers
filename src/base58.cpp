@@ -18,7 +18,8 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
-#include <string.h>
+
+#include <cstring>
 
 #include <stdexcept>
 #include <vector>
@@ -691,7 +692,7 @@ namespace impl {
         SSL_HELPERS_ASSERT(out.size() <= out_data_len);
         if (!out.empty())
         {
-            memcpy(out_data, out.data(), out.size());
+            std::memcpy(out_data, out.data(), out.size());
         }
         return out.size();
     }
