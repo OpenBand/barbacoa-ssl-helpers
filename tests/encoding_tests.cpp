@@ -58,6 +58,29 @@ namespace tests {
         BOOST_CHECK_EQUAL(from_base64(base64_data), data);
     }
 
+    BOOST_AUTO_TEST_CASE(printable_check)
+    {
+        print_current_test_name();
+
+        std::string data("\x00Hi", 3);
+
+        BOOST_CHECK_EQUAL(to_printable(data), std::string(".Hi"));
+
+        data = std::string("1\x03\x03\x03\\23", 6);
+
+        BOOST_CHECK_EQUAL(to_printable(data), std::string("1...\\2"));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '*'), std::string("1***\\2"));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '*', "\\"), std::string("1****2"));
+
+        data = std::string("Hi\t!\n");
+
+        BOOST_CHECK_EQUAL(to_printable(data, '.'), std::string("Hi.!."));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '.', {}), std::string("Hi\t!\n"));
+    }
+
     BOOST_AUTO_TEST_SUITE_END()
 } // namespace tests
 } // namespace ssl_helpers
