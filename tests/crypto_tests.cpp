@@ -505,20 +505,20 @@ namespace tests {
             data.append(create_test_data());
         }
 
-        DUMP_STR(data);
+        DUMP_STR(to_printable(data));
 
         const std::string key { "Temp Key" };
-        const std::string marker { "><" };
+        const std::string marker { "%%" };
 
         auto flip_data = aes_ecnrypt_flip(data, key, marker, true); //flip
 
         const auto& session_data = flip_data.second;
 
-        DUMP_STR(to_base64(session_data)); //flip data
+        DUMP_STR(to_printable(session_data)); //flip data
 
         const auto& cipher_data = flip_data.first;
 
-        DUMP_STR(to_base64(cipher_data)); //flap data
+        DUMP_STR(to_printable(cipher_data)); //flap data
 
         auto data_ = aes_decrypt_flip(cipher_data, key, session_data, marker); //flap
 
@@ -535,7 +535,7 @@ namespace tests {
             data.append(create_test_data());
         }
 
-        DUMP_STR(data);
+        DUMP_STR(to_printable(data));
 
         const std::string base_key { "Temp Key" };
 
@@ -547,11 +547,11 @@ namespace tests {
 
             const auto& session_data = flip_data.second;
 
-            DUMP_STR(to_base64(session_data)); //flip data
+            DUMP_STR(to_printable(session_data)); //flip data
 
             const auto& cipher_data = flip_data.first;
 
-            DUMP_STR(to_base64(cipher_data)); //flap data
+            DUMP_STR(to_printable(cipher_data)); //flap data
 
             auto data_ = aes_decrypt_flip(cipher_data, key, session_data); //flap
 
@@ -569,7 +569,7 @@ namespace tests {
             data.append(create_test_data());
         }
 
-        DUMP_STR(data);
+        DUMP_STR(to_printable(data));
 
         const std::string key { "Temp Key3" };
 
@@ -579,11 +579,11 @@ namespace tests {
 
             const auto& session_data = flip_data.second;
 
-            DUMP_STR(to_base64(session_data)); //flip data
+            DUMP_STR(to_printable(session_data)); //flip data
 
             const auto& cipher_data = flip_data.first;
 
-            DUMP_STR(to_base64(cipher_data)); //flap data
+            DUMP_STR(to_printable(cipher_data)); //flap data
 
             auto data_ = aes_decrypt_flip(cipher_data, key, session_data); //flap
 

@@ -26,10 +26,8 @@ using salted_key_type = std::pair<std::string /*encryption key*/, aes_salt_type 
 std::string aes_to_string(const aes_256bit_type&);
 aes_256bit_type aes_from_string(const std::string&);
 
-using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
-
 //Create tagged data stream that includes tag data of encrypted stream
-//and optionally ADD (Additional Authenticated Data)
+//and optionally 'marker' is ADD (Additional Authenticated Data)
 //Implementation guarantee authenticity of ADD and Data through the tag.
 //  Stream:
 //
@@ -44,7 +42,7 @@ public:
     ~aes_encryption_stream();
 
     //start encryption session. Key is required here or in constructor
-    std::string start(const std::string& key = {}, const std::string& add = {});
+    std::string start(const std::string& key = {}, const std::string& marker = {});
     std::string encrypt(const std::string& plain_chunk);
     //finalize encryption session and create tag
     aes_tag_type finalize();
@@ -61,7 +59,7 @@ public:
     ~aes_decryption_stream();
 
     //start decryption session. Key is required here or in constructor
-    void start(const std::string& key = {}, const std::string& add = {});
+    void start(const std::string& key = {}, const std::string& marker = {});
     std::string decrypt(const std::string& cipher_chunk);
     //finalize decryption session and check input tag
     void finalize(const aes_tag_type& tag);
@@ -90,23 +88,34 @@ std::string aes_decrypt(const std::string& key, const std::string& cipher_data, 
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag);
 
 //Encrypt file with key and providing check tag.
-//Use ADD like file type marker.
+//Use 'marker' like file type marker.
 //Warning:
 //  on POSIX systems you can happily read and write a file already opened by another process.
 //  Therefore lock file writing before encrypt this to prevent corruption!
 //
 
 // return check tag
-aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& add = {});
-void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& add = {});
+aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& marker = {});
+void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& marker = {});
 
-//Method to transfer encrypted data with key
+//Method to transfer as encrypted data and it key through unencrypted network
+//To make this 'miracle' data is transferred with three chunks separated in time
+//useless individually. This chunks are not classical cipher data, initialization vector
+//and cipher key to prevent easy reveal
+
 //Warning:
-//  Cipher, session data ans instant key must
-//  pass via different data channels.
-//  Especially cipher and session data.
+//  Cipher data (1.), session data (2.) and instant key (3.) should
+//  be pass via different data channels.
 
-flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& user_key, const std::string& add = {}, bool add_garbage = false);
-std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& user_key, const std::string& session_data, const std::string& add = {});
+using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
+
+flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
+                                   const std::string& user_key,
+                                   const std::string& marker = {},
+                                   bool add_garbage = false);
+std::string aes_decrypt_flip(const std::string& cipher_data,
+                             const std::string& user_key,
+                             const std::string& session_data,
+                             const std::string& marker = {});
 
 } // namespace ssl_helpers
