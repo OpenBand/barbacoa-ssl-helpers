@@ -165,7 +165,7 @@ std::string aes_get_salted_key(const std::string& user_key, const aes_salt_type&
     return aes_get_salted_key(user_key, std::string { salt.data(), salt.size() });
 }
 
-std::string aes_encrypt(const std::string& key, const std::string& plain_data)
+std::string aes_encrypt(const std::string& plain_data, const std::string& key)
 {
     try
     {
@@ -181,9 +181,9 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data)
     return {};
 }
 
-std::string aes_encrypt(const std::string& key, const std::string& plain_data,
+std::string aes_encrypt(const std::string& plain_data, const std::string& key,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
-                        std::string& check_tag)
+                        std::string& created_check_tag)
 {
     try
     {
@@ -193,7 +193,7 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data,
             std::vector<char> result = cipher.encrypt(impl::sha512::hash(key), plain_data.data(), plain_data.size());
             result_str = { result.data(), result.size() };
         }
-        check_tag = create_check_tag(key, result_str);
+        created_check_tag = create_check_tag(key, result_str);
         return result_str;
     }
     catch (std::exception& e)
@@ -204,7 +204,7 @@ std::string aes_encrypt(const std::string& key, const std::string& plain_data,
     return {};
 }
 
-std::string aes_decrypt(const std::string& key, const std::string& cipher_data)
+std::string aes_decrypt(const std::string& cipher_data, const std::string& key)
 {
     try
     {
@@ -220,7 +220,8 @@ std::string aes_decrypt(const std::string& key, const std::string& cipher_data)
     return {};
 }
 
-std::string aes_decrypt(const std::string& key, const std::string& cipher_data, const std::string& check_tag,
+std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
+                        const std::string& check_tag,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag)
 {
     try
@@ -292,7 +293,10 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const aes
     }
 }
 
-flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::string& user_key, const std::string& add, bool add_garbage)
+flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
+                                   const std::string& user_key,
+                                   const std::string& add,
+                                   bool add_garbage)
 {
     try
     {
@@ -348,7 +352,17 @@ flip_session_type aes_ecnrypt_flip(const std::string& plain_data, const std::str
     return {};
 }
 
-std::string aes_decrypt_flip(const std::string& cipher_data, const std::string& user_key, const std::string& session_data, const std::string& add)
+std::string aes_decrypt_flip(const flip_session_type& session_data,
+                             const std::string& instant_key,
+                             const std::string& marker)
+{
+    return aes_decrypt_flip(session_data.first, session_data.second, instant_key, marker);
+}
+
+std::string aes_decrypt_flip(const std::string& cipher_data,
+                             const std::string& session_data,
+                             const std::string& user_key,
+                             const std::string& add)
 {
     try
     {

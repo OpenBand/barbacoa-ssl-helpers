@@ -5,117 +5,134 @@
 #include <string>
 #include <functional>
 #include <memory>
-#include <array>
+
+#include "crypto_types.h"
+
 
 namespace ssl_helpers {
 
-namespace impl {
-    class aes_encryption_stream_impl;
-    class aes_decryption_stream_impl;
-} // namespace impl
-
-//Base types
-
-using aes_256bit_type = std::array<char, 16>;
-
-using aes_tag_type = aes_256bit_type;
-
-using aes_salt_type = aes_256bit_type;
-using salted_key_type = std::pair<std::string /*encryption key*/, aes_salt_type /*random salt*/>;
-
-std::string aes_to_string(const aes_256bit_type&);
-aes_256bit_type aes_from_string(const std::string&);
-
-//Create tagged data stream that includes tag data of encrypted stream
-//and optionally 'marker' is ADD (Additional Authenticated Data)
-//Implementation guarantee authenticity of ADD and Data through the tag.
-//  Stream:
+// Create tagged ecrypted data stream that includes tag data of encrypted plane data
+// and optional marker that is ADD (Additional Authenticated Data).
+// Implementation guarantee authenticity of marker and data through the tag (TAG).
+// Data stream (from top down to bottom):
 //
-// -> |ADD (can be readable)|encrypted data (bynary)|TAG (bynary 16 sz)|
+//     |ADD (can be readable data)|
+//     |Encrypted plane data (binary)| -> transfer by chunks
+//     |TAG (binary with 16 size)|
 //
 
 class aes_encryption_stream
 {
 public:
-    //these KEY and ADD will be stored for each encryption session if no one set in this->start
-    aes_encryption_stream(const std::string& key = {}, const std::string& additional_authenticated_data = {});
+    aes_encryption_stream(const std::string& default_key = {},
+                          const std::string& default_add = {});
     ~aes_encryption_stream();
 
-    //start encryption session. Key is required here or in constructor
-    std::string start(const std::string& key = {}, const std::string& marker = {});
+    // Start encryption session.
+    std::string start(const std::string& key = {},
+                      const std::string& add = {});
+
+    // Encrypt chunk of plane data
     std::string encrypt(const std::string& plain_chunk);
-    //finalize encryption session and create tag
+
+    // Finalize encryption session and create tag.
     aes_tag_type finalize();
 
 private:
     std::unique_ptr<impl::aes_encryption_stream_impl> _impl;
 };
 
+
+// Decrypt tagged ecrypted data stream to plane data.
+
 class aes_decryption_stream
 {
 public:
-    //these KEY and ADD will be stored for each decryption session if no one set in this->start
-    aes_decryption_stream(const std::string& key = {}, const std::string& additional_authenticated_data = {});
+    aes_decryption_stream(const std::string& default_key = {},
+                          const std::string& default_add = {});
     ~aes_decryption_stream();
 
-    //start decryption session. Key is required here or in constructor
-    void start(const std::string& key = {}, const std::string& marker = {});
+    // Start decryption session.
+    void start(const std::string& key = {},
+               const std::string& add = {});
+
+    // Decrypt chunk of cipher data.
     std::string decrypt(const std::string& cipher_chunk);
-    //finalize decryption session and check input tag
+
+    // Finalize decryption session and check stream tag.
     void finalize(const aes_tag_type& tag);
 
 private:
     std::unique_ptr<impl::aes_decryption_stream_impl> _impl;
 };
 
-//Improve crypto resistance by using PBKDF2
-//
 
-salted_key_type aes_create_salted_key(const std::string& user_key);
-std::string aes_get_salted_key(const std::string& user_key, const std::string& salt);
-std::string aes_get_salted_key(const std::string& user_key, const aes_salt_type& salt);
+// Improve crypto resistance by using PBKDF2.
 
-//Encrypt data at once. It can be provide authenticity of data with custom create_check_tag function
-//
+// Create random salt apply PBKDF2.
+salted_key_type aes_create_salted_key(const std::string& key);
 
-std::string aes_encrypt(const std::string& key, const std::string& plain_data);
-std::string aes_encrypt(const std::string& key, const std::string& plain_data,
+// Apply PBKDF2 for input salt.
+std::string aes_get_salted_key(const std::string& key, const std::string& salt);
+std::string aes_get_salted_key(const std::string& key, const aes_salt_type& salt);
+
+
+// Encrypt data at once.
+
+std::string aes_encrypt(const std::string& plain_data, const std::string& key);
+
+// Provide authenticity of data with custom function.
+std::string aes_encrypt(const std::string& plain_data, const std::string& key,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
-                        std::string& check_tag);
+                        std::string& created_check_tag);
 
-std::string aes_decrypt(const std::string& key, const std::string& cipher_data);
-std::string aes_decrypt(const std::string& key, const std::string& cipher_data, const std::string& check_tag,
+// Decrypt data at once.
+
+std::string aes_decrypt(const std::string& cipher_data, const std::string& key);
+
+// Provide authenticity of data with custom function.
+std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
+                        const std::string& check_tag,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag);
 
-//Encrypt file with key and providing check tag.
-//Use 'marker' like file type marker.
-//Warning:
-//  on POSIX systems you can happily read and write a file already opened by another process.
-//  Therefore lock file writing before encrypt this to prevent corruption!
-//
 
-// return check tag
+// Encrypt file.
+// Use 'marker' argument like file type sign.
+
 aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& marker = {});
+
+// Decrypt file.
+
 void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& marker = {});
 
-//Method to transfer as encrypted data and it key through unencrypted network
-//To make this 'miracle' data is transferred with three chunks separated in time
-//useless individually. This chunks are not classical cipher data, initialization vector
-//and cipher key to prevent easy reveal
 
-//Warning:
-//  Cipher data (1.), session data (2.) and instant key (3.) should
-//  be pass via different data channels.
+// 'Flip' technique to transfer both encrypted data and key through unencrypted network.
+// Idea is suppose data are transferred by three chunks separated in time
+// and useless individually.
+// This chunks are not classical cipher data, initialization vector
+// and cipher key to prevent easy reveal. By default session key has unpredictable
+// size (add_garbage) otherwise this chunk has fixed size.
+// One can improve security if will transfer chunks via different data channels.
+// Chunks:
+//     1. Instant key
+//     2. Cipher data
+//     3. Session key
 
-using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session data*/>;
+// Encrypt data at once (Flip).
 
 flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
-                                   const std::string& user_key,
+                                   const std::string& instant_key,
                                    const std::string& marker = {},
-                                   bool add_garbage = false);
+                                   bool add_garbage = true);
+
+// Decrypt data at once (Flap).
+
+std::string aes_decrypt_flip(const flip_session_type& session_data,
+                             const std::string& instant_key,
+                             const std::string& marker = {});
 std::string aes_decrypt_flip(const std::string& cipher_data,
-                             const std::string& user_key,
-                             const std::string& session_data,
+                             const std::string& session_key,
+                             const std::string& instant_key,
                              const std::string& marker = {});
 
 } // namespace ssl_helpers

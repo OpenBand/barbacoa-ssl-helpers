@@ -31,7 +31,7 @@ namespace impl {
 
             std::string rest, external_rest;
 
-            auto write_wrupper = [&external_rest, &total_input_sz, &total_result_sz, &f](const char* data, size_t sz) {
+            auto write_wrapper = [&external_rest, &total_input_sz, &total_result_sz, &f](const char* data, size_t sz) {
                 if (total_result_sz + sz > total_input_sz)
                 {
                     auto sz_ = total_input_sz - total_result_sz;
@@ -81,7 +81,7 @@ namespace impl {
                 // write rest bytes
                 if (!rest.empty())
                 {
-                    write_wrupper(rest.data(), rest.size());
+                    write_wrapper(rest.data(), rest.size());
                     rest.resize(0);
                     pos_w = f.tellg();
                 }
@@ -96,16 +96,16 @@ namespace impl {
                 if (left > 0)
                 {
                     if (left >= result_sz)
-                        write_wrupper(chunk_.data(), chunk_.size());
+                        write_wrapper(chunk_.data(), chunk_.size());
                     else
                     {
-                        write_wrupper(chunk_.substr(0, left).data(), left);
+                        write_wrapper(chunk_.substr(0, left).data(), left);
                         rest = chunk_.substr(left);
                     }
                 }
                 else
                 {
-                    write_wrupper(chunk_.data(), chunk_.size());
+                    write_wrapper(chunk_.data(), chunk_.size());
                     break;
                 }
                 pos_w = f.tellg();
@@ -136,6 +136,7 @@ namespace impl {
             {
                 bf::resize_file(path_, total_result_sz);
             }
+
             return std::make_pair(total_input_sz, total_result_sz);
         }
         catch (std::exception& e)

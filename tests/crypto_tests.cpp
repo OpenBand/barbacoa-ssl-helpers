@@ -28,11 +28,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_GT(data.size(), 16);
 
-        auto cipher_data = aes_encrypt(key, data);
+        auto cipher_data = aes_encrypt(data, key);
 
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, cipher_data);
+        auto data_ = aes_decrypt(cipher_data, key);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -49,11 +49,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_LT(data.size(), 16);
 
-        auto cipher_data = aes_encrypt(key, data);
+        auto cipher_data = aes_encrypt(data, key);
 
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, cipher_data);
+        auto data_ = aes_decrypt(cipher_data, key);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -85,12 +85,12 @@ namespace tests {
         };
 
         std::string tag;
-        auto cipher_data = aes_encrypt(key, data, create_check_tag, tag);
+        auto cipher_data = aes_encrypt(data, key, create_check_tag, tag);
 
         BOOST_REQUIRE(!tag.empty());
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(key, cipher_data, tag, create_check_tag);
+        auto data_ = aes_decrypt(cipher_data, key, tag, create_check_tag);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -381,11 +381,11 @@ namespace tests {
             DUMP_STR(to_base64(cipher_key));
             DUMP_STR(salt);
 
-            auto cipher_data = aes_encrypt(cipher_key, data);
+            auto cipher_data = aes_encrypt(data, cipher_key);
 
             BOOST_REQUIRE(!cipher_data.empty());
 
-            auto data_ = aes_decrypt(aes_get_salted_key(key, from_base64(salt)), cipher_data);
+            auto data_ = aes_decrypt(cipher_data, aes_get_salted_key(key, from_base64(salt)));
 
             BOOST_REQUIRE(!data_.empty());
 
@@ -520,7 +520,7 @@ namespace tests {
 
         DUMP_STR(to_printable(cipher_data)); //flap data
 
-        auto data_ = aes_decrypt_flip(cipher_data, key, session_data, marker); //flap
+        auto data_ = aes_decrypt_flip(cipher_data, session_data, key, marker); //flap
 
         BOOST_REQUIRE_EQUAL(data, data_);
     }
@@ -553,7 +553,7 @@ namespace tests {
 
             DUMP_STR(to_printable(cipher_data)); //flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, key, session_data); //flap
+            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); //flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }
@@ -585,7 +585,7 @@ namespace tests {
 
             DUMP_STR(to_printable(cipher_data)); //flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, key, session_data); //flap
+            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); //flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }
