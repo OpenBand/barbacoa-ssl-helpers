@@ -25,7 +25,7 @@ aes_encryption_stream::aes_encryption_stream(const std::string& key, const std::
 {
     try
     {
-        _impl = std::make_unique<impl::aes_encryption_stream_impl>(key, add);
+        _impl = std::make_unique<impl::__aes_encryption_stream>(key, add);
     }
     catch (std::exception& e)
     {
@@ -76,7 +76,7 @@ aes_decryption_stream::aes_decryption_stream(const std::string& key, const std::
 {
     try
     {
-        _impl = std::make_unique<impl::aes_decryption_stream_impl>(key, add);
+        _impl = std::make_unique<impl::__aes_decryption_stream>(key, add);
     }
     catch (std::exception& e)
     {

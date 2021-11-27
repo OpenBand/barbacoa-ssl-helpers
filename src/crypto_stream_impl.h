@@ -73,10 +73,10 @@ namespace impl {
         state _state = state::finalized;
     };
 
-    class aes_encryption_stream_impl
+    class __aes_encryption_stream
     {
     public:
-        aes_encryption_stream_impl(const std::string& key, const std::string& add);
+        __aes_encryption_stream(const std::string& key, const std::string& add);
 
         std::string start(const std::string& key, const std::string& add);
         std::string encrypt(const std::string& plain_chunk);
@@ -90,10 +90,10 @@ namespace impl {
         std::string _add;
     };
 
-    class aes_decryption_stream_impl
+    class __aes_decryption_stream
     {
     public:
-        aes_decryption_stream_impl(const std::string& key, const std::string& add);
+        __aes_decryption_stream(const std::string& key, const std::string& add);
 
         void start(const std::string& key, const std::string& add);
         std::string decrypt(const std::string& cipher_chunk);

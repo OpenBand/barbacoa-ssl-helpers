@@ -5,53 +5,53 @@
 namespace ssl_helpers {
 namespace impl {
 
-    aes_encryption_stream_impl::aes_encryption_stream_impl(const std::string& key, const std::string& add)
+    __aes_encryption_stream::__aes_encryption_stream(const std::string& key, const std::string& add)
         : _add(add)
     {
         if (!key.empty())
             _key_shadow = nxor_encode(key);
     }
 
-    std::string aes_encryption_stream_impl::start(const std::string& key, const std::string& add)
+    std::string __aes_encryption_stream::start(const std::string& key, const std::string& add)
     {
         SSL_HELPERS_ASSERT(!key.empty() || !_key_shadow.empty(), "Key required");
 
         return _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
     }
 
-    std::string aes_encryption_stream_impl::encrypt(const std::string& plain_chunk)
+    std::string __aes_encryption_stream::encrypt(const std::string& plain_chunk)
     {
         return _sm.process(plain_chunk);
     }
 
-    gcm_tag_type aes_encryption_stream_impl::finalize()
+    gcm_tag_type __aes_encryption_stream::finalize()
     {
         return _sm.finalize();
     }
 
-    size_t aes_encryption_stream_impl::tag_size()
+    size_t __aes_encryption_stream::tag_size()
     {
         return std::tuple_size<gcm_tag_type>::value;
     }
 
-    aes_decryption_stream_impl::aes_decryption_stream_impl(const std::string& key, const std::string& add)
+    __aes_decryption_stream::__aes_decryption_stream(const std::string& key, const std::string& add)
         : _add(add)
     {
         if (!key.empty())
             _key_shadow = nxor_encode(key);
     }
 
-    void aes_decryption_stream_impl::start(const std::string& key, const std::string& add)
+    void __aes_decryption_stream::start(const std::string& key, const std::string& add)
     {
         _sm.start(key.empty() ? nxor_decode(_key_shadow) : key, add.empty() ? _add : add);
     }
 
-    std::string aes_decryption_stream_impl::decrypt(const std::string& cipher_chunk)
+    std::string __aes_decryption_stream::decrypt(const std::string& cipher_chunk)
     {
         return _sm.process(cipher_chunk);
     }
 
-    void aes_decryption_stream_impl::finalize(const gcm_tag_type& tag)
+    void __aes_decryption_stream::finalize(const gcm_tag_type& tag)
     {
         _sm.finalize(tag);
     }

@@ -18,8 +18,8 @@ aes_256bit_type aes_from_string(const std::string&);
 using flip_session_type = std::pair<std::string /*cipher data*/, std::string /*session key*/>;
 
 namespace impl {
-    class aes_encryption_stream_impl;
-    class aes_decryption_stream_impl;
+    class __aes_encryption_stream;
+    class __aes_decryption_stream;
 } // namespace impl
 
 } // namespace ssl_helpers
