@@ -39,7 +39,7 @@ public:
     aes_tag_type finalize();
 
     // Stream interface
-    aes_encryption_stream& operator<<(std::string& plain_chunk)
+    aes_encryption_stream& operator<<(const std::string& plain_chunk)
     {
         encrypt(plain_chunk);
         return *this;
@@ -70,7 +70,7 @@ public:
     void finalize(const aes_tag_type& tag);
 
     // Stream interface
-    aes_decryption_stream& operator<<(std::string& cipher_chunk)
+    aes_decryption_stream& operator<<(const std::string& cipher_chunk)
     {
         decrypt(cipher_chunk);
         return *this;
