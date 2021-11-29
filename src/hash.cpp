@@ -9,7 +9,7 @@
 
 #include <fstream>
 
-#include <openssl/evp.h> //PKCS5_PBKDF2_HMAC_SHA1
+#include <openssl/evp.h> // PKCS5_PBKDF2_HMAC_SHA1
 
 namespace ssl_helpers {
 
@@ -88,9 +88,11 @@ std::string create_hash_from_file(const std::string& path, const size_t limit)
     std::ifstream input(path, std::ifstream::binary);
 
     typename HashType::encoder encoder;
-    char buff[10 * 1024]; //a multiple of 2 and 16 and not too small (https://stackoverflow.com/questions/10698339/what-would-be-an-ideal-buffer-size)
+    // A multiple of 2 and 16 and not too small
+    // (https://stackoverflow.com/questions/10698339/what-would-be-an-ideal-buffer-size)
+    char buff[10 * 1024];
 
-    //start from 1 byte to read small files less than sizeof(buff)
+    // Start from 1 byte to read small files less than sizeof(buff)
     for (std::streamsize bytes_read = 1; input.read(buff, sizeof(buff)) || bytes_read > 0;)
     {
         bytes_read = input.gcount();
@@ -176,4 +178,5 @@ std::string create_pbkdf2_512(const std::string& password, const std::string& sa
 
     return { h.data(), sz };
 }
+
 } // namespace ssl_helpers

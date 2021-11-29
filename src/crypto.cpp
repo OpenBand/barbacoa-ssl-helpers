@@ -16,25 +16,29 @@ std::string aes_to_string(const aes_256bit_type& data)
 {
     return impl::to_string(data);
 }
+
 aes_256bit_type aes_from_string(const std::string& tag)
 {
     return impl::create_from_string<aes_256bit_type>(tag.data(), tag.size());
 }
 
-aes_encryption_stream::aes_encryption_stream(const std::string& key, const std::string& add)
+aes_encryption_stream::aes_encryption_stream(const std::string& default_key,
+                                             const std::string& default_add)
 {
     try
     {
-        _impl = std::make_unique<impl::__aes_encryption_stream>(key, add);
+        _impl = std::make_unique<impl::__aes_encryption_stream>(default_key, default_add);
     }
     catch (std::exception& e)
     {
         SSL_HELPERS_ASSERT(false, e.what());
     }
 }
+
 aes_encryption_stream::~aes_encryption_stream()
 {
 }
+
 std::string aes_encryption_stream::start(const std::string& key, const std::string& add)
 {
     try
@@ -47,6 +51,7 @@ std::string aes_encryption_stream::start(const std::string& key, const std::stri
     }
     return {};
 }
+
 std::string aes_encryption_stream::encrypt(const std::string& plain_chunk)
 {
     try
@@ -59,6 +64,7 @@ std::string aes_encryption_stream::encrypt(const std::string& plain_chunk)
     }
     return {};
 }
+
 aes_tag_type aes_encryption_stream::finalize()
 {
     try
@@ -72,20 +78,23 @@ aes_tag_type aes_encryption_stream::finalize()
     return {};
 }
 
-aes_decryption_stream::aes_decryption_stream(const std::string& key, const std::string& add)
+aes_decryption_stream::aes_decryption_stream(const std::string& default_key,
+                                             const std::string& default_add)
 {
     try
     {
-        _impl = std::make_unique<impl::__aes_decryption_stream>(key, add);
+        _impl = std::make_unique<impl::__aes_decryption_stream>(default_key, default_add);
     }
     catch (std::exception& e)
     {
         SSL_HELPERS_ASSERT(false, e.what());
     }
 }
+
 aes_decryption_stream::~aes_decryption_stream()
 {
 }
+
 void aes_decryption_stream::start(const std::string& key, const std::string& add)
 {
     try
@@ -97,6 +106,7 @@ void aes_decryption_stream::start(const std::string& key, const std::string& add
         SSL_HELPERS_ASSERT(false, e.what());
     }
 }
+
 std::string aes_decryption_stream::decrypt(const std::string& cipher_chunk)
 {
     try
@@ -109,6 +119,7 @@ std::string aes_decryption_stream::decrypt(const std::string& cipher_chunk)
     }
     return {};
 }
+
 void aes_decryption_stream::finalize(const aes_tag_type& tag)
 {
     try
@@ -121,11 +132,11 @@ void aes_decryption_stream::finalize(const aes_tag_type& tag)
     }
 }
 
-salted_key_type aes_create_salted_key(const std::string& user_key)
+salted_key_type aes_create_salted_key(const std::string& key)
 {
     try
     {
-        SSL_HELPERS_ASSERT(!user_key.empty(), "Key required");
+        SSL_HELPERS_ASSERT(!key.empty(), "Key required");
 
         impl::init_openssl();
 
@@ -133,7 +144,7 @@ salted_key_type aes_create_salted_key(const std::string& user_key)
         SSL_HELPERS_ASSERT(1 == RAND_bytes((unsigned char*)salt.data(), salt.size()), "Can't get random data for salt");
 
         std::string salt_str { salt.data(), salt.size() };
-        return { create_pbkdf2_512(user_key, salt_str), salt };
+        return { create_pbkdf2_512(key, salt_str), salt };
     }
     catch (std::exception& e)
     {
@@ -143,14 +154,14 @@ salted_key_type aes_create_salted_key(const std::string& user_key)
     return {};
 }
 
-std::string aes_get_salted_key(const std::string& user_key, const std::string& salt)
+std::string aes_get_salted_key(const std::string& key, const std::string& salt)
 {
     try
     {
-        SSL_HELPERS_ASSERT(!user_key.empty(), "Key required");
+        SSL_HELPERS_ASSERT(!key.empty(), "Key required");
         SSL_HELPERS_ASSERT(!salt.empty(), "Salt required");
 
-        return create_pbkdf2_512(user_key, salt);
+        return create_pbkdf2_512(key, salt);
     }
     catch (std::exception& e)
     {
@@ -160,9 +171,9 @@ std::string aes_get_salted_key(const std::string& user_key, const std::string& s
     return {};
 }
 
-std::string aes_get_salted_key(const std::string& user_key, const aes_salt_type& salt)
+std::string aes_get_salted_key(const std::string& key, const aes_salt_type& salt)
 {
-    return aes_get_salted_key(user_key, std::string { salt.data(), salt.size() });
+    return aes_get_salted_key(key, std::string { salt.data(), salt.size() });
 }
 
 std::string aes_encrypt(const std::string& plain_data, const std::string& key)
@@ -294,15 +305,15 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const aes
 }
 
 flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
-                                   const std::string& user_key,
-                                   const std::string& add,
+                                   const std::string& instant_key,
+                                   const std::string& marker,
                                    bool add_garbage)
 {
     try
     {
         std::string session_data;
 
-        auto salted_key = aes_create_salted_key(user_key);
+        auto salted_key = aes_create_salted_key(instant_key);
 
         std::string cipher_data;
         aes_tag_type tag;
@@ -312,7 +323,7 @@ flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
 
             std::ostringstream out;
 
-            out << stream.start(salted_key.first, add);
+            out << stream.start(salted_key.first, marker);
             out << stream.encrypt(plain_data);
             tag = stream.finalize();
 
@@ -322,7 +333,7 @@ flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
         {
             std::ostringstream out;
 
-            out << add;
+            out << marker;
             const auto& salt = salted_key.second;
             out.write(salt.data(), salt.size());
             out.write(tag.data(), tag.size());
@@ -362,7 +373,7 @@ std::string aes_decrypt_flip(const flip_session_type& session_data,
 std::string aes_decrypt_flip(const std::string& cipher_data,
                              const std::string& session_data,
                              const std::string& user_key,
-                             const std::string& add)
+                             const std::string& marker)
 {
     try
     {
@@ -372,13 +383,13 @@ std::string aes_decrypt_flip(const std::string& cipher_data,
         {
             std::istringstream in(session_data);
 
-            if (!add.empty())
+            if (!marker.empty())
             {
-                std::vector<char> add_buff(add.size());
-                in.read(add_buff.data(), add_buff.size());
+                std::vector<char> marker_buff(marker.size());
+                in.read(marker_buff.data(), marker_buff.size());
                 SSL_HELPERS_ASSERT(!in.fail(), "Insufficient data");
 
-                SSL_HELPERS_ASSERT(std::string(add_buff.data(), add_buff.size()) == add, "Invalid ADD");
+                SSL_HELPERS_ASSERT(std::string(marker_buff.data(), marker_buff.size()) == marker, "Invalid marker");
             }
 
             in.read(salt.data(), salt.size());
@@ -392,18 +403,18 @@ std::string aes_decrypt_flip(const std::string& cipher_data,
         {
             std::istringstream in(cipher_data);
 
-            if (!add.empty())
+            if (!marker.empty())
             {
-                std::vector<char> add_buff(add.size());
-                in.read(add_buff.data(), add_buff.size());
+                std::vector<char> marker_buff(marker.size());
+                in.read(marker_buff.data(), marker_buff.size());
                 SSL_HELPERS_ASSERT(!in.fail(), "Insufficient data");
 
-                SSL_HELPERS_ASSERT(std::string(add_buff.data(), add_buff.size()) == add, "Invalid ADD");
+                SSL_HELPERS_ASSERT(std::string(marker_buff.data(), marker_buff.size()) == marker, "Invalid marker");
             }
 
             aes_decryption_stream stream;
 
-            stream.start(aes_get_salted_key(user_key, salt), add);
+            stream.start(aes_get_salted_key(user_key, salt), marker);
 
             char buff[1024];
 

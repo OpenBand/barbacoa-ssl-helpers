@@ -17,7 +17,7 @@ namespace impl {
     {
         struct openssl_thread_config
         {
-            //statoc to be callable from OpenSSL C-lib:
+            // statoc to be callable from OpenSSL C-lib:
             static std::mutex* popenssl_mutexes;
             static unsigned long get_thread_id();
             static void locking_callback(int mode, int type, const char* file, int line);
@@ -29,7 +29,7 @@ namespace impl {
 
         openssl_scope()
         {
-            //for legacy OpenSSL versions
+            // For legacy OpenSSL versions
 
             ERR_load_crypto_strings();
             OpenSSL_add_all_algorithms();
@@ -61,6 +61,7 @@ namespace impl {
             CRYPTO_set_locking_callback(&locking_callback);
         }
     }
+
     openssl_scope::openssl_thread_config::~openssl_thread_config()
     {
         if (CRYPTO_get_id_callback() == &get_thread_id)

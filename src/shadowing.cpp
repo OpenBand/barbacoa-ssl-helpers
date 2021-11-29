@@ -11,6 +11,7 @@ namespace ssl_helpers {
 namespace impl {
 
     using key_type = uint64_t;
+
     constexpr size_t key_sz = sizeof(key_type);
 
     std::string encode_noise_xor(const std::string& secret, key_type noise)

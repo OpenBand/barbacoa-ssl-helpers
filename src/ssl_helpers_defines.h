@@ -5,10 +5,10 @@
 
 #include <stdexcept>
 
-// Workaround for varying preprocessing behavior between MSVC and gcc
+// Workaround for varying preprocessing behavior between MSVC and gcc.
 #define SSL_HELPERS_EXPAND_MACRO(x) x
 
-// suppress warning "conditional expression is constant" in the while(0) for visual c++
+// Suppress warning "conditional expression is constant" in the while(0) for visual c++
 // http://cnicholson.net/2009/03/stupid-c-tricks-dowhile0-and-c4127/
 #define SSL_HELPERS_MULTILINE_MACRO_BEGIN \
     do                                    \

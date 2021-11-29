@@ -121,10 +121,10 @@ namespace tests {
 
             aes_encryption_stream stream { key, ADD_MARK };
 
-            //write ADD = "AAA" at the beginning
+            // Write ADD = "AAA" at the beginning
             encryption_ss << stream.start();
 
-            //encryption cycle
+            // Encryption cycle
             char buff[chunk_size];
             for (std::streamsize bytes_read = 1; source_ss.read(buff, sizeof(buff)) || bytes_read > 0;)
             {
@@ -135,7 +135,7 @@ namespace tests {
                 }
             }
 
-            //write tag at the end
+            // Write tag at the end
             encryption_ss << aes_to_string(stream.finalize());
 
             ciphertext_stream_data = encryption_ss.str();
@@ -150,7 +150,7 @@ namespace tests {
 
             char buff[chunk_size];
 
-            //read mark
+            // Read mark
             source_ss.read(buff, ADD_MARK.size());
             buff[ADD_MARK.size()] = 0;
             BOOST_REQUIRE_EQUAL(std::string { buff }, ADD_MARK);
@@ -161,7 +161,7 @@ namespace tests {
 
             aes_tag_type tag;
 
-            //decryption cycle
+            // Decryption cycle
             size_t cypher_size = 0;
             for (std::streamsize bytes_read = 1; source_ss.read(buff, sizeof(buff)) || bytes_read > 0;)
             {
@@ -279,7 +279,7 @@ namespace tests {
         BOOST_REQUIRE(!ciphertext_stream_data.empty());
         BOOST_REQUIRE_EQUAL(ciphertext_stream_data.size(), data.size() + 16);
 
-        //corrupt
+        // Corrupt!
         ciphertext_stream_data[data.size() / 2] = ~ciphertext_stream_data[data.size() / 2];
 
         std::string data_;
@@ -310,7 +310,7 @@ namespace tests {
         BOOST_REQUIRE(!ciphertext_stream_data.empty());
         BOOST_REQUIRE_EQUAL(ciphertext_stream_data.size(), data.size() + 16);
 
-        //corrupt
+        // Corrupt!
         ciphertext_stream_data[data.size() + 8] = ~ciphertext_stream_data[data.size() + 8];
 
         std::string data_;
@@ -320,7 +320,7 @@ namespace tests {
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
 
-        //failed finalization but data correct
+        // Failed finalization but data correct
         BOOST_REQUIRE_EQUAL(data, data_);
     }
 
@@ -345,7 +345,7 @@ namespace tests {
         BOOST_REQUIRE(!ciphertext_stream_data.empty());
         BOOST_REQUIRE_EQUAL(ciphertext_stream_data.size(), data.size() + 16);
 
-        //corrupt
+        // Corrupt!
         add_mark[add_mark.size() / 2] = ~add_mark[add_mark.size() / 2];
 
         std::string data_;
@@ -355,7 +355,7 @@ namespace tests {
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
 
-        //failed finalization but data correct
+        // Failed finalization but data correct
         BOOST_REQUIRE_EQUAL(data, data_);
     }
 
@@ -376,7 +376,8 @@ namespace tests {
             auto key_data = aes_create_salted_key(key);
 
             std::string cipher_key = key_data.first;
-            std::string salt = to_base64(aes_to_string(key_data.second)); //pass or save separately from key
+            // Pass or save separately from key!
+            std::string salt = to_base64(aes_to_string(key_data.second));
 
             DUMP_STR(to_base64(cipher_key));
             DUMP_STR(salt);
@@ -413,7 +414,8 @@ namespace tests {
 
         auto store_chunk = [](std::stringstream& ss, const std::string& chunk) {
             size_t sz = chunk.size();
-            //there is more compact way to store digital value but this simple way used for test
+            // There is more compact way to store digital value
+            // but this simple way used for test
             ss.write((char*)&sz, sizeof(sz));
             ss << chunk;
         };
@@ -449,7 +451,7 @@ namespace tests {
 
         payload.append(data + data + "3");
 
-        //restore previous key but use new ADD
+        // Restore previous key but use new ADD
         store_chunk(encryption_ss, enc.start({}, "x2"));
         store_chunk(encryption_ss, enc.encrypt(data + "4"));
         store_chunk(encryption_ss, aes_to_string(enc.finalize()));
@@ -510,17 +512,17 @@ namespace tests {
         const std::string key { "Temp Key" };
         const std::string marker { "%%" };
 
-        auto flip_data = aes_ecnrypt_flip(data, key, marker, true); //flip
+        auto flip_data = aes_ecnrypt_flip(data, key, marker, true); // flip
 
         const auto& session_data = flip_data.second;
 
-        DUMP_STR(to_printable(session_data)); //flip data
+        DUMP_STR(to_printable(session_data)); // flip data
 
         const auto& cipher_data = flip_data.first;
 
-        DUMP_STR(to_printable(cipher_data)); //flap data
+        DUMP_STR(to_printable(cipher_data)); // flap data
 
-        auto data_ = aes_decrypt_flip(cipher_data, session_data, key, marker); //flap
+        auto data_ = aes_decrypt_flip(cipher_data, session_data, key, marker); // flap
 
         BOOST_REQUIRE_EQUAL(data, data_);
     }
@@ -543,17 +545,17 @@ namespace tests {
         {
             std::string key = base_key + std::to_string(ci + 1);
 
-            auto flip_data = aes_ecnrypt_flip(data, key, {}, true); //flip
+            auto flip_data = aes_ecnrypt_flip(data, key, {}, true); // flip
 
             const auto& session_data = flip_data.second;
 
-            DUMP_STR(to_printable(session_data)); //flip data
+            DUMP_STR(to_printable(session_data)); // flip data
 
             const auto& cipher_data = flip_data.first;
 
-            DUMP_STR(to_printable(cipher_data)); //flap data
+            DUMP_STR(to_printable(cipher_data)); // flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); //flap
+            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); // flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }
@@ -575,17 +577,17 @@ namespace tests {
 
         for (size_t ci = 0; ci < 5; ++ci)
         {
-            auto flip_data = aes_ecnrypt_flip(data, key); //flip
+            auto flip_data = aes_ecnrypt_flip(data, key); // flip
 
             const auto& session_data = flip_data.second;
 
-            DUMP_STR(to_printable(session_data)); //flip data
+            DUMP_STR(to_printable(session_data)); // flip data
 
             const auto& cipher_data = flip_data.first;
 
-            DUMP_STR(to_printable(cipher_data)); //flap data
+            DUMP_STR(to_printable(cipher_data)); // flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); //flap
+            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); // flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }

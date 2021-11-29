@@ -100,7 +100,7 @@ namespace impl {
             BN_clear_free(bn);
         }
 
-        //CBigNum(char n) is not portable.  Use 'signed char' or 'unsigned char'.
+        // CBigNum(char n) is not portable.  Use 'signed char' or 'unsigned char'.
         CBigNum(signed char n)
             : CBigNum()
         {
@@ -561,11 +561,11 @@ namespace impl {
         CBigNum bn0 = 0;
 
         // Convert big endian data to little endian
-        // Extra zero at the end make sure bignum will interpret as a positive number
+        // Extra zero at the end make sure bignum will interpret as a positive number.
         std::vector<unsigned char> vchTmp(pend - pbegin + 1, 0);
         reverse_copy(pbegin, pend, vchTmp.begin());
 
-        // Convert little endian data to bignum
+        // Convert little endian data to bignum.
         CBigNum bn;
         bn.setvch(vchTmp);
 
@@ -589,7 +589,7 @@ namespace impl {
         for (const unsigned char* p = pbegin; p < pend && *p == 0; p++)
             str += pszBase58[0];
 
-        // Convert little endian std::string to big endian
+        // Convert little endian std::string to big endian.
         reverse(str.begin(), str.end());
         //    slog( "Encode '%s'", str.c_str() );
         return str;
@@ -602,7 +602,7 @@ namespace impl {
     }
 
     // Decode a base58-encoded string psz into byte vector vchRet
-    // returns true if decoding is succesful
+    // returns true if decoding is succesful.
     inline bool DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet)
     {
         CAutoBN_CTX pctx;
@@ -613,7 +613,7 @@ namespace impl {
         while (isspace(*psz))
             psz++;
 
-        // Convert big endian string to bignum
+        // Convert big endian string to bignum.
         for (const char* p = psz; *p; p++)
         {
             const char* p1 = strchr(pszBase58, *p);
@@ -634,26 +634,26 @@ namespace impl {
             bn += bnChar;
         }
 
-        // Get bignum as little endian data
+        // Get bignum as little endian data.
         std::vector<unsigned char> vchTmp = bn.getvch();
 
-        // Trim off sign byte if present
+        // Trim off sign byte if present.
         if (vchTmp.size() >= 2 && vchTmp.end()[-1] == 0 && vchTmp.end()[-2] >= 0x80)
             vchTmp.erase(vchTmp.end() - 1);
 
-        // Restore leading zeros
+        // Restore leading zeros.
         int nLeadingZeros = 0;
         for (const char* p = psz; *p == pszBase58[0]; p++)
             nLeadingZeros++;
         vchRet.assign(nLeadingZeros + vchTmp.size(), 0);
 
-        // Convert little endian data to big endian
+        // Convert little endian data to big endian.
         reverse_copy(vchTmp.begin(), vchTmp.end(), vchRet.end() - vchTmp.size());
         return true;
     }
 
     // Decode a base58-encoded string str into byte vector vchRet
-    // returns true if decoding is succesful
+    // returns true if decoding is succesful.
     inline bool DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet)
     {
         return DecodeBase58(str.c_str(), vchRet);
@@ -679,9 +679,10 @@ namespace impl {
         }
         return std::vector<char>((const char*)out.data(), ((const char*)out.data()) + out.size());
     }
+
     /**
- *  @return the number of bytes decoded
- */
+     *  @return the number of bytes decoded
+     */
     size_t from_base58(const std::string& base58_str, char* out_data, size_t out_data_len)
     {
         std::vector<unsigned char> out;

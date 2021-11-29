@@ -59,7 +59,7 @@ namespace impl {
 
                 std::string chunk { vchunk.data(), vchunk.size() };
 
-                // free space for rest bytes
+                // Free space for rest bytes
                 size_t rest_sz = rest.size();
                 while (!chunk.empty() && chunk.size() % chunk_sz == 0 && rest_sz >= chunk_sz)
                 {
@@ -78,7 +78,7 @@ namespace impl {
                 pos_r = f.tellg();
                 f.seekg(pos_w);
 
-                // write rest bytes
+                // Write rest bytes
                 if (!rest.empty())
                 {
                     write_wrapper(rest.data(), rest.size());

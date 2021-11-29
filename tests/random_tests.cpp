@@ -16,7 +16,7 @@ namespace tests {
         auto rnd1 = create_pseudo_random_from_time();
         auto rnd2 = create_pseudo_random_from_time(12);
 
-        //There is extremely low probability that rnd1 = rnd2 or rnd3 = rnd4:
+        // There is extremely low probability that rnd1 = rnd2 or rnd3 = rnd4:
 
         BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
 
@@ -34,7 +34,8 @@ namespace tests {
         auto rnd2 = create_random(12);
         auto rnd3 = create_random(120);
 
-        //There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
+        // There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
+
         BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd1)(rnd2));
         BOOST_CHECK_PREDICATE(std::not_equal_to<decltype(rnd1)>(), (rnd2)(rnd3));
     }
