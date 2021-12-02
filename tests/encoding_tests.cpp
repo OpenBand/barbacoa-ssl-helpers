@@ -18,7 +18,7 @@ namespace tests {
 
         DUMP_STR(hex_data);
 
-        BOOST_CHECK_EQUAL(hex_data, "7465737401020074657374");
+        BOOST_CHECK_EQUAL(hex_data, "74657374007465737400746573");
 
         BOOST_CHECK_EQUAL(from_hex(hex_data), data);
     }
@@ -33,7 +33,7 @@ namespace tests {
 
         DUMP_STR(base58_data);
 
-        BOOST_CHECK_EQUAL(base58_data, "Vs5LyQWRVPGQB4P");
+        BOOST_CHECK_EQUAL(base58_data, "AhJcBpYgvLmvXeAspE");
 
         BOOST_CHECK_EQUAL(from_base58(base58_data), data);
     }

@@ -20,14 +20,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        std::string data;
-        for (size_t ci = 0; ci < 10; ++ci)
-        {
-            data.append(create_test_data());
-        }
 
-        BOOST_REQUIRE(!data.empty());
-        BOOST_REQUIRE_GT(data.size(), 16);
+        std::string data = create_test_data(1024);
 
         auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
@@ -45,10 +39,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
-        BOOST_REQUIRE_LT(data.size(), 16);
+        std::string data = create_test_data(1024);
 
         auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
@@ -66,14 +58,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        std::string data;
-        for (size_t ci = 0; ci < 10; ++ci)
-        {
-            data.append(create_test_data());
-        }
 
-        BOOST_REQUIRE(!data.empty());
-        BOOST_REQUIRE_GT(data.size(), 16);
+        std::string data = create_test_data(1024);
 
         auto create_check_tag = [](const std::string& key, const std::string& cipher_data) {
             std::string ss;
@@ -103,16 +89,10 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        std::string data;
-        for (size_t ci = 0; ci < 200; ++ci)
-        {
-            data.append(create_test_data());
-        }
 
         constexpr size_t chunk_size = 512;
 
-        BOOST_REQUIRE(!data.empty());
-        BOOST_REQUIRE_GT(data.size(), chunk_size * 2);
+        std::string data = create_test_data(chunk_size * 3);
 
         const std::string ADD_MARK { "AAA" };
         std::string ciphertext_stream_data;
@@ -204,9 +184,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -235,9 +214,8 @@ namespace tests {
 
         std::string add_mark { "(a)" };
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -265,9 +243,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -296,9 +273,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -331,9 +307,8 @@ namespace tests {
 
         std::string add_mark { "(a)" };
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -365,7 +340,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Simple Key" };
-        auto data = create_test_data();
+
+        std::string data = create_test_data(1024);
 
         std::vector<std::string> cipher_key_history;
         std::vector<std::string> salt_history;
@@ -409,9 +385,8 @@ namespace tests {
         print_current_test_name();
 
         const std::string key { "Secret Key" };
-        auto data = create_test_data();
 
-        BOOST_REQUIRE(!data.empty());
+        std::string data = create_test_data(1024);
 
         auto store_chunk = [](std::stringstream& ss, const std::string& chunk) {
             size_t sz = chunk.size();
@@ -502,11 +477,7 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data;
-        for (size_t ci = 0; ci < 50; ++ci)
-        {
-            data.append(create_test_data());
-        }
+        std::string data = create_test_data(1024);
 
         DUMP_STR(to_printable(data));
 
@@ -532,11 +503,7 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data;
-        for (size_t ci = 0; ci < 10; ++ci)
-        {
-            data.append(create_test_data());
-        }
+        std::string data = create_test_data(1024);
 
         DUMP_STR(to_printable(data));
 
@@ -566,11 +533,7 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data;
-        for (size_t ci = 0; ci < 10; ++ci)
-        {
-            data.append(create_test_data());
-        }
+        std::string data = create_test_data(1024);
 
         DUMP_STR(to_printable(data));
 

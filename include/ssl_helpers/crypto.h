@@ -41,13 +41,6 @@ public:
     // Finalize encryption session and create tag.
     aes_tag_type finalize();
 
-    // Stream interface
-    aes_encryption_stream& operator<<(const std::string& plain_chunk)
-    {
-        encrypt(plain_chunk);
-        return *this;
-    }
-
 private:
     std::unique_ptr<impl::__aes_encryption_stream> _impl;
 };
@@ -72,13 +65,6 @@ public:
 
     // Finalize decryption session and check stream tag.
     void finalize(const aes_tag_type& tag);
-
-    // Stream interface
-    aes_decryption_stream& operator<<(const std::string& cipher_chunk)
-    {
-        decrypt(cipher_chunk);
-        return *this;
-    }
 
 private:
     std::unique_ptr<impl::__aes_decryption_stream> _impl;

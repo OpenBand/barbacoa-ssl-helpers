@@ -89,6 +89,7 @@ if (SSL_HELPERS_BUILD_TESTS)
     set( Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
 
     find_package(Boost ${BOOST_VERSION_MIN} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+    find_package(Threads REQUIRED)
 
     if(NOT Boost_FOUND)
         message(ERROR "Boost required for tests!")
@@ -103,6 +104,7 @@ if (SSL_HELPERS_BUILD_TESTS)
         target_link_libraries( ssl_helpers_tests
                                ssl-helpers
                                ${PLATFORM_SPECIFIC_LIBS}
+                               Threads::Threads
                                ${Boost_LIBRARIES})
     endif()
 endif()

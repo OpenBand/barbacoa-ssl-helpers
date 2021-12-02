@@ -9,6 +9,19 @@
 namespace ssl_helpers {
 namespace tests {
 
+    std::string create_test_data(const size_t size)
+    {
+        static std::string data_ = "test";
+        std::string data;
+        size_t ci = 0;
+        while (data.size() < size)
+        {
+            data.append(data_);
+            data.push_back(ci);
+        }
+        return data.substr(0, size);
+    }
+
     boost::filesystem::path create_binary_data_file(const size_t file_size)
     {
         BOOST_REQUIRE_GT(file_size, 0u);
