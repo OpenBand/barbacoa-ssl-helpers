@@ -19,6 +19,7 @@ libeay32.dll
 
 # Usage
 
+The most part of functionality interface provides via ordinary functions.
 Some functions require user configuration and preliminary initialization for OpenSSL Libcrypto API. 
 Use singleton object _ssl_helpers::context_ if required. For example:
 
