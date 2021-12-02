@@ -1,6 +1,6 @@
 # Barbacoa SSL Helpers
 
-Helpers for convenient usage of OpenSSL features on C++ and a little more
+Helpers for convenient usage of OpenSSL features in C++ and a little more
 
 # Requirements
 
