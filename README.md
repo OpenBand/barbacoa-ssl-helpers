@@ -33,11 +33,11 @@ ssl_helpers::aes_encrypt_file(ssl_ctx, secret_file, secret_key);
 ssl_helpers::aes_encrypt_file(ssl_ctx, shredded_file, 
                               ssl_helpers::create_random_string(ssl_ctx, 13));
 
-// In business logic without context ssl_helpers provide ordinary functions.
-secret_key = ssl_helpers::create_pbkdf2_512(secret_password, salt);
-secret_key_in_memory = ssl_helpers::nxor_encode(secret_key);
-secret_key_in_db = ssl_helpers::create_ripemd160(secret_key);
-for_debug_log = ssl_helpers::to_hex(secret_key_in_db);
+// In business logic without context ssl_helpers provides ordinary functions.
+auto secret_key = ssl_helpers::create_pbkdf2_512(secret_password, salt);
+auto secret_key_in_memory = ssl_helpers::nxor_encode(secret_key);
+auto secret_key_in_db = ssl_helpers::create_ripemd160(secret_key);
+auto for_debug_log = ssl_helpers::to_hex(secret_key_in_db);
 ```
 
 Have a look at tests for details.
