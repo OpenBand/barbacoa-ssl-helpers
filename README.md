@@ -28,11 +28,19 @@ auto buff_sz = some_magic_to_discover_optimal_buffer_size();
 auto &ssl_config = context::configurate().enable_libcrypto_api().set_file_buffer_size(buff_sz);
 auto &ssl_ctx = ssl_helpers::context::init(ssl_config);
 
-// In business logic.
+// In business logic if context required.
 ssl_helpers::aes_encrypt_file(ssl_ctx, secret_file, secret_key);
 ssl_helpers::aes_encrypt_file(ssl_ctx, shredded_file, 
                               ssl_helpers::create_random_string(ssl_ctx, 13));
+
+// In business logic without context ssl_helpers provide ordinary functions.
+secret_key = ssl_helpers::create_pbkdf2_512(secret_password, salt);
+secret_key_in_memory = ssl_helpers::nxor_encode(secret_key);
+secret_key_in_db = ssl_helpers::create_ripemd160(secret_key);
+for_debug_log = ssl_helpers::to_hex(secret_key_in_db);
 ```
+
+Have a look at tests for details.
 
 # Features
 
