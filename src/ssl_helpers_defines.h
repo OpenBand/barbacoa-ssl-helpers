@@ -1,9 +1,10 @@
 #ifndef _SSL_HELPERS_DEFINES_
 #define _SSL_HELPERS_DEFINES_
 
+#include <stdexcept>
+
 #include "platform_config.h"
 
-#include <stdexcept>
 
 // Workaround for varying preprocessing behavior between MSVC and gcc.
 #define SSL_HELPERS_EXPAND_MACRO(x) x

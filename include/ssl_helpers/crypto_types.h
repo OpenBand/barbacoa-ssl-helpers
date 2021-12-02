@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 
+
 namespace ssl_helpers {
 
 using aes_256bit_type = std::array<char, 16>;

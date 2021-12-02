@@ -12,18 +12,19 @@
 // - E-mail usually won't line-break if there's no punctuation to break at.
 // - Doubleclicking selects the whole number as one word if it's all alphanumeric.
 //
-#include "ssl_helpers_defines.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 #include <limits>
 #include <algorithm>
-
-#include <cstring>
-
 #include <stdexcept>
 #include <vector>
+
 #include <openssl/bn.h>
+
+#include "ssl_helpers_defines.h"
+
 
 namespace ssl_helpers {
 namespace impl {

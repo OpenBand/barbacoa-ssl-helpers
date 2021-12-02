@@ -31,11 +31,13 @@ set(SSL_HELPERS_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/convert_helper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/crypto.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/openssl.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/openssl_crypto_api.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/aes256.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/crypto_stream_impl.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/shadowing.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/inplace.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp"
 )
 file(GLOB_RECURSE SSL_HELPERS_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"

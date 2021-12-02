@@ -1,11 +1,11 @@
-#include "sha1.h"
+#include <cstring>
+#include <cmath>
 
 #include "convert_helper.h"
 #include "ssl_helpers_defines.h"
 #include "hash_helper.h"
+#include "sha1.h"
 
-#include <cstring>
-#include <cmath>
 
 namespace ssl_helpers {
 namespace impl {

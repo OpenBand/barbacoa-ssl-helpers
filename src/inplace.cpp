@@ -1,9 +1,9 @@
-#include "ssl_helpers_defines.h"
-
-#include "inplace.h"
-
 #include <fstream>
 #include <vector>
+
+#include "ssl_helpers_defines.h"
+#include "inplace.h"
+
 
 namespace ssl_helpers {
 namespace impl {

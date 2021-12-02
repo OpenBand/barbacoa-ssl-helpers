@@ -1,6 +1,8 @@
 #pragma once
+
 #include <string>
 #include <vector>
+
 
 namespace ssl_helpers {
 namespace impl {

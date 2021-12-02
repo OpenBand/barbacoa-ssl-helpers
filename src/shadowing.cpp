@@ -1,10 +1,11 @@
+#include <cstring>
+#include <array>
+
 #include <ssl_helpers/shadowing.h>
 #include <ssl_helpers/random.h>
 
 #include "ssl_helpers_defines.h"
 
-#include <array>
-#include <cstring>
 
 namespace ssl_helpers {
 
@@ -63,9 +64,22 @@ namespace impl {
     }
 } // namespace impl
 
+std::string nxor_encode_sec(const context& ctx, const std::string& secret)
+{
+    try
+    {
+        return impl::encode_noise_xor(secret, static_cast<impl::key_type>(create_random(ctx)));
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ASSERT(false, e.what());
+    }
+    return {};
+}
+
 std::string nxor_encode(const std::string& secret)
 {
-    return impl::encode_noise_xor(secret, static_cast<impl::key_type>(create_random()));
+    return impl::encode_noise_xor(secret, static_cast<impl::key_type>(create_pseudo_random_from_time()));
 }
 
 std::string nxor_decode(const std::string& shadowed_secret)

@@ -1,13 +1,14 @@
-#include "tests_common.h"
+#include <functional>
+#include <sstream>
+
+#include <boost/filesystem.hpp>
 
 #include <ssl_helpers/crypto.h>
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/encoding.h>
 
-#include <functional>
-#include <sstream>
+#include "tests_common.h"
 
-#include <boost/filesystem.hpp>
 
 namespace ssl_helpers {
 namespace tests {
@@ -28,11 +29,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_GT(data.size(), 16);
 
-        auto cipher_data = aes_encrypt(data, key);
+        auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(cipher_data, key);
+        auto data_ = aes_decrypt(default_context_with_crypto_api(), cipher_data, key);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -49,11 +50,11 @@ namespace tests {
         BOOST_REQUIRE(!data.empty());
         BOOST_REQUIRE_LT(data.size(), 16);
 
-        auto cipher_data = aes_encrypt(data, key);
+        auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(cipher_data, key);
+        auto data_ = aes_decrypt(default_context_with_crypto_api(), cipher_data, key);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -85,12 +86,12 @@ namespace tests {
         };
 
         std::string tag;
-        auto cipher_data = aes_encrypt(data, key, create_check_tag, tag);
+        auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key, create_check_tag, tag);
 
         BOOST_REQUIRE(!tag.empty());
         BOOST_REQUIRE(!cipher_data.empty());
 
-        auto data_ = aes_decrypt(cipher_data, key, tag, create_check_tag);
+        auto data_ = aes_decrypt(default_context_with_crypto_api(), cipher_data, key, tag, create_check_tag);
 
         BOOST_REQUIRE(!data_.empty());
 
@@ -119,7 +120,7 @@ namespace tests {
             std::stringstream source_ss { data };
             std::stringstream encryption_ss;
 
-            aes_encryption_stream stream { key, ADD_MARK };
+            aes_encryption_stream stream { default_context_with_crypto_api(), key, ADD_MARK };
 
             // Write ADD = "AAA" at the beginning
             encryption_ss << stream.start();
@@ -155,7 +156,7 @@ namespace tests {
             buff[ADD_MARK.size()] = 0;
             BOOST_REQUIRE_EQUAL(std::string { buff }, ADD_MARK);
 
-            aes_decryption_stream stream { key, ADD_MARK };
+            aes_decryption_stream stream { default_context_with_crypto_api(), key, ADD_MARK };
 
             stream.start();
 
@@ -210,7 +211,7 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        aes_encryption_stream enc_stream;
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
         ciphertext_stream_data.append(enc_stream.start(key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
@@ -220,7 +221,7 @@ namespace tests {
 
         std::string data_;
 
-        aes_decryption_stream dec_stream;
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
         dec_stream.start(key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_NO_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))));
@@ -241,7 +242,7 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        aes_encryption_stream enc_stream;
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
         enc_stream.start(key, add_mark);
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
@@ -251,7 +252,7 @@ namespace tests {
 
         std::string data_;
 
-        aes_decryption_stream dec_stream;
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
         dec_stream.start(key, add_mark);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_NO_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))));
@@ -271,7 +272,7 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        aes_encryption_stream enc_stream;
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
         ciphertext_stream_data.append(enc_stream.start(key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
@@ -284,7 +285,7 @@ namespace tests {
 
         std::string data_;
 
-        aes_decryption_stream dec_stream;
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
         dec_stream.start(key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
@@ -302,7 +303,7 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        aes_encryption_stream enc_stream;
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
         ciphertext_stream_data.append(enc_stream.start(key));
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
@@ -315,7 +316,7 @@ namespace tests {
 
         std::string data_;
 
-        aes_decryption_stream dec_stream;
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
         dec_stream.start(key);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
@@ -337,7 +338,7 @@ namespace tests {
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
 
-        aes_encryption_stream enc_stream;
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
         enc_stream.start(key, add_mark);
         ciphertext_stream_data.append(enc_stream.encrypt(data));
         ciphertext_stream_data.append(aes_to_string(enc_stream.finalize()));
@@ -350,7 +351,7 @@ namespace tests {
 
         std::string data_;
 
-        aes_decryption_stream dec_stream;
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
         dec_stream.start(key, add_mark);
         data_ = dec_stream.decrypt(ciphertext_stream_data.substr(0, data.size()));
         BOOST_REQUIRE_THROW(dec_stream.finalize(aes_from_string(ciphertext_stream_data.substr(data.size(), 16))), std::logic_error);
@@ -373,7 +374,7 @@ namespace tests {
 
         for (size_t ci = 0; ci < times; ++ci)
         {
-            auto key_data = aes_create_salted_key(key);
+            auto key_data = aes_create_salted_key(default_context_with_crypto_api(), key);
 
             std::string cipher_key = key_data.first;
             // Pass or save separately from key!
@@ -382,11 +383,11 @@ namespace tests {
             DUMP_STR(to_base64(cipher_key));
             DUMP_STR(salt);
 
-            auto cipher_data = aes_encrypt(data, cipher_key);
+            auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, cipher_key);
 
             BOOST_REQUIRE(!cipher_data.empty());
 
-            auto data_ = aes_decrypt(cipher_data, aes_get_salted_key(key, from_base64(salt)));
+            auto data_ = aes_decrypt(default_context_with_crypto_api(), cipher_data, aes_get_salted_key(key, from_base64(salt)));
 
             BOOST_REQUIRE(!data_.empty());
 
@@ -429,7 +430,7 @@ namespace tests {
 
         std::string payload;
         std::stringstream encryption_ss;
-        aes_encryption_stream enc(key, "x");
+        aes_encryption_stream enc(default_context_with_crypto_api(), key, "x");
 
         store_chunk(encryption_ss, enc.start());
         store_chunk(encryption_ss, enc.encrypt(data + "1"));
@@ -461,7 +462,7 @@ namespace tests {
         DUMP_STR(to_base64(encryption_ss.str()));
 
         std::string payload_;
-        aes_decryption_stream dec(key, "x");
+        aes_decryption_stream dec(default_context_with_crypto_api(), key, "x");
 
         dec.start({}, read_chunk(encryption_ss));
         payload_.append(dec.decrypt(read_chunk(encryption_ss)));
@@ -490,9 +491,9 @@ namespace tests {
 
         boost::filesystem::path temp = create_readable_data_file(100 * 1024, boost::unit_test::framework::current_test_case().p_name);
 
-        auto tag = aes_encrypt_file(temp.generic_string(), key, "XXX");
+        auto tag = aes_encrypt_file(default_context_with_crypto_api(), temp.generic_string(), key, "XXX");
 
-        aes_decrypt_file(temp.generic_string(), key, tag, "XXX");
+        aes_decrypt_file(default_context_with_crypto_api(), temp.generic_string(), key, tag, "XXX");
 
         boost::filesystem::remove(temp);
     }
@@ -512,7 +513,7 @@ namespace tests {
         const std::string key { "Temp Key" };
         const std::string marker { "%%" };
 
-        auto flip_data = aes_ecnrypt_flip(data, key, marker, true); // flip
+        auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key, marker, true); // flip
 
         const auto& session_data = flip_data.second;
 
@@ -522,7 +523,7 @@ namespace tests {
 
         DUMP_STR(to_printable(cipher_data)); // flap data
 
-        auto data_ = aes_decrypt_flip(cipher_data, session_data, key, marker); // flap
+        auto data_ = aes_decrypt_flip(default_context_with_crypto_api(), cipher_data, session_data, key, marker); // flap
 
         BOOST_REQUIRE_EQUAL(data, data_);
     }
@@ -545,7 +546,7 @@ namespace tests {
         {
             std::string key = base_key + std::to_string(ci + 1);
 
-            auto flip_data = aes_ecnrypt_flip(data, key, {}, true); // flip
+            auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key, {}, true); // flip
 
             const auto& session_data = flip_data.second;
 
@@ -555,7 +556,7 @@ namespace tests {
 
             DUMP_STR(to_printable(cipher_data)); // flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); // flap
+            auto data_ = aes_decrypt_flip(default_context_with_crypto_api(), cipher_data, session_data, key); // flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }
@@ -577,7 +578,7 @@ namespace tests {
 
         for (size_t ci = 0; ci < 5; ++ci)
         {
-            auto flip_data = aes_ecnrypt_flip(data, key); // flip
+            auto flip_data = aes_ecnrypt_flip(default_context_with_crypto_api(), data, key); // flip
 
             const auto& session_data = flip_data.second;
 
@@ -587,7 +588,7 @@ namespace tests {
 
             DUMP_STR(to_printable(cipher_data)); // flap data
 
-            auto data_ = aes_decrypt_flip(cipher_data, session_data, key); // flap
+            auto data_ = aes_decrypt_flip(default_context_with_crypto_api(), cipher_data, session_data, key); // flap
 
             BOOST_REQUIRE_EQUAL(data, data_);
         }

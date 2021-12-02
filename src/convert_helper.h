@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ssl_helpers_defines.h"
-
 #include <cstdint>
 #include <string>
 #include <stdexcept>
+
+#include "ssl_helpers_defines.h"
+
 
 namespace ssl_helpers {
 namespace impl {

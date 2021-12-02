@@ -1,12 +1,13 @@
 #pragma once
 
+#include <memory>
+
+#include <ssl_helpers/context.h>
+
 #include "ssl_helpers_defines.h"
-
 #include "aes256.h"
-
 #include "sha512.h"
 
-#include <memory>
 
 namespace ssl_helpers {
 namespace impl {
@@ -76,7 +77,8 @@ namespace impl {
     class __aes_encryption_stream
     {
     public:
-        __aes_encryption_stream(const std::string& key, const std::string& add);
+        __aes_encryption_stream(const context& ctx,
+                                const std::string& key, const std::string& add);
 
         std::string start(const std::string& key, const std::string& add);
         std::string encrypt(const std::string& plain_chunk);
@@ -93,7 +95,8 @@ namespace impl {
     class __aes_decryption_stream
     {
     public:
-        __aes_decryption_stream(const std::string& key, const std::string& add);
+        __aes_decryption_stream(const context& ctx,
+                                const std::string& key, const std::string& add);
 
         void start(const std::string& key, const std::string& add);
         std::string decrypt(const std::string& cipher_chunk);

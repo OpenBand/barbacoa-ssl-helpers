@@ -1,14 +1,15 @@
+#include <sstream>
+
+#include <openssl/rand.h>
+
 #include <ssl_helpers/crypto.h>
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/random.h>
-
-#include <openssl/rand.h>
 
 #include "crypto_stream_impl.h"
 #include "sha256.h"
 #include "inplace.h"
 
-#include <sstream>
 
 namespace ssl_helpers {
 
@@ -22,12 +23,15 @@ aes_256bit_type aes_from_string(const std::string& tag)
     return impl::create_from_string<aes_256bit_type>(tag.data(), tag.size());
 }
 
-aes_encryption_stream::aes_encryption_stream(const std::string& default_key,
+aes_encryption_stream::aes_encryption_stream(const context& ctx,
+                                             const std::string& default_key,
                                              const std::string& default_add)
 {
     try
     {
-        _impl = std::make_unique<impl::__aes_encryption_stream>(default_key, default_add);
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
+        _impl = std::make_unique<impl::__aes_encryption_stream>(ctx, default_key, default_add);
     }
     catch (std::exception& e)
     {
@@ -78,12 +82,15 @@ aes_tag_type aes_encryption_stream::finalize()
     return {};
 }
 
-aes_decryption_stream::aes_decryption_stream(const std::string& default_key,
+aes_decryption_stream::aes_decryption_stream(const context& ctx,
+                                             const std::string& default_key,
                                              const std::string& default_add)
 {
     try
     {
-        _impl = std::make_unique<impl::__aes_decryption_stream>(default_key, default_add);
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
+        _impl = std::make_unique<impl::__aes_decryption_stream>(ctx, default_key, default_add);
     }
     catch (std::exception& e)
     {
@@ -132,13 +139,13 @@ void aes_decryption_stream::finalize(const aes_tag_type& tag)
     }
 }
 
-salted_key_type aes_create_salted_key(const std::string& key)
+salted_key_type aes_create_salted_key(const context& ctx, const std::string& key)
 {
     try
     {
-        SSL_HELPERS_ASSERT(!key.empty(), "Key required");
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
 
-        impl::init_openssl();
+        SSL_HELPERS_ASSERT(!key.empty(), "Key required");
 
         aes_salt_type salt;
         SSL_HELPERS_ASSERT(1 == RAND_bytes((unsigned char*)salt.data(), salt.size()), "Can't get random data for salt");
@@ -176,10 +183,13 @@ std::string aes_get_salted_key(const std::string& key, const aes_salt_type& salt
     return aes_get_salted_key(key, std::string { salt.data(), salt.size() });
 }
 
-std::string aes_encrypt(const std::string& plain_data, const std::string& key)
+std::string aes_encrypt(const context& ctx,
+                        const std::string& plain_data, const std::string& key)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         impl::aes_block cipher;
         std::vector<char> result = cipher.encrypt(impl::sha512::hash(key), plain_data.data(), plain_data.size());
         return { result.data(), result.size() };
@@ -192,12 +202,15 @@ std::string aes_encrypt(const std::string& plain_data, const std::string& key)
     return {};
 }
 
-std::string aes_encrypt(const std::string& plain_data, const std::string& key,
+std::string aes_encrypt(const context& ctx,
+                        const std::string& plain_data, const std::string& key,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
                         std::string& created_check_tag)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         impl::aes_block cipher;
         std::string result_str;
         {
@@ -215,10 +228,13 @@ std::string aes_encrypt(const std::string& plain_data, const std::string& key,
     return {};
 }
 
-std::string aes_decrypt(const std::string& cipher_data, const std::string& key)
+std::string aes_decrypt(const context& ctx,
+                        const std::string& cipher_data, const std::string& key)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         impl::aes_block cipher;
         std::vector<char> result = cipher.decrypt(impl::sha512::hash(key), cipher_data.data(), cipher_data.size());
         return { result.data(), result.size() };
@@ -231,12 +247,15 @@ std::string aes_decrypt(const std::string& cipher_data, const std::string& key)
     return {};
 }
 
-std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
+std::string aes_decrypt(const context& ctx,
+                        const std::string& cipher_data, const std::string& key,
                         const std::string& check_tag,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         impl::aes_block cipher;
         auto input_check_tag = create_check_tag(key, cipher_data);
         if (check_tag != input_check_tag)
@@ -253,11 +272,16 @@ std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
     return {};
 }
 
-aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& add)
+aes_tag_type aes_encrypt_file(const context& ctx,
+                              const std::string& path,
+                              const std::string& key,
+                              const std::string& add)
 {
     try
     {
-        aes_encryption_stream stream { key, add };
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
+        aes_encryption_stream stream { ctx, key, add };
 
         auto modification_rule = [&stream](const std::string& input_chunk, size_t current_byte) -> std::string {
             std::string result;
@@ -268,7 +292,7 @@ aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, c
             return result;
         };
 
-        auto result = impl::modify_binary_inplace(path, 10 * 1024, modification_rule, 0);
+        auto result = impl::modify_binary_inplace(path, ctx().file_buffer_size(), modification_rule, 0);
         SSL_HELPERS_ASSERT(result.second = result.first + add.size());
 
         return stream.finalize();
@@ -280,11 +304,17 @@ aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, c
     return {};
 }
 
-void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& add)
+void aes_decrypt_file(const context& ctx,
+                      const std::string& path,
+                      const std::string& key,
+                      const aes_tag_type& tag,
+                      const std::string& add)
 {
     try
     {
-        aes_decryption_stream stream { key, add };
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
+        aes_decryption_stream stream { ctx, key, add };
 
         auto modification_rule = [&stream](const std::string& input_chunk, size_t current_byte) -> std::string {
             if (!current_byte)
@@ -293,7 +323,7 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const aes
             return stream.decrypt(input_chunk);
         };
 
-        auto result = impl::modify_binary_inplace(path, 10 * 1024, modification_rule, add.size());
+        auto result = impl::modify_binary_inplace(path, ctx().file_buffer_size(), modification_rule, add.size());
         SSL_HELPERS_ASSERT(result.second = result.first - add.size());
 
         stream.finalize(tag);
@@ -304,22 +334,25 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const aes
     }
 }
 
-flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
+flip_session_type aes_ecnrypt_flip(const context& ctx,
+                                   const std::string& plain_data,
                                    const std::string& instant_key,
                                    const std::string& marker,
                                    bool add_garbage)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         std::string session_data;
 
-        auto salted_key = aes_create_salted_key(instant_key);
+        auto salted_key = aes_create_salted_key(ctx, instant_key);
 
         std::string cipher_data;
         aes_tag_type tag;
 
         {
-            aes_encryption_stream stream;
+            aes_encryption_stream stream(ctx);
 
             std::ostringstream out;
 
@@ -342,7 +375,7 @@ flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
             {
                 aes_salt_type garbage;
 
-                auto garbage_len = create_random() % garbage.size() + 1;
+                auto garbage_len = create_random(ctx) % garbage.size() + 1;
                 if (garbage_len > garbage.size())
                     garbage_len = garbage.size();
 
@@ -363,20 +396,24 @@ flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
     return {};
 }
 
-std::string aes_decrypt_flip(const flip_session_type& session_data,
+std::string aes_decrypt_flip(const context& ctx,
+                             const flip_session_type& session_data,
                              const std::string& instant_key,
                              const std::string& marker)
 {
-    return aes_decrypt_flip(session_data.first, session_data.second, instant_key, marker);
+    return aes_decrypt_flip(ctx, session_data.first, session_data.second, instant_key, marker);
 }
 
-std::string aes_decrypt_flip(const std::string& cipher_data,
+std::string aes_decrypt_flip(const context& ctx,
+                             const std::string& cipher_data,
                              const std::string& session_data,
                              const std::string& user_key,
                              const std::string& marker)
 {
     try
     {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+
         aes_salt_type salt;
         aes_tag_type tag;
 
@@ -412,7 +449,7 @@ std::string aes_decrypt_flip(const std::string& cipher_data,
                 SSL_HELPERS_ASSERT(std::string(marker_buff.data(), marker_buff.size()) == marker, "Invalid marker");
             }
 
-            aes_decryption_stream stream;
+            aes_decryption_stream stream(ctx);
 
             stream.start(aes_get_salted_key(user_key, salt), marker);
 

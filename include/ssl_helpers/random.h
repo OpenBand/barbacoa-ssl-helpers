@@ -2,6 +2,9 @@
 
 #include <string>
 
+#include <ssl_helpers/context.h>
+
+
 namespace ssl_helpers {
 
 // Generate pseudo random value from system time (high speed algorithm)
@@ -12,6 +15,6 @@ std::string create_pseudo_random_string_from_time(const uint32_t offset = 0);
 
 // Generate secure random value (slow algorithm)
 
-uint64_t create_random(const uint64_t offset = 0);
+uint64_t create_random(const context&, const uint64_t offset = 0);
 
 } // namespace ssl_helpers

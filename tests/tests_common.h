@@ -1,9 +1,12 @@
 #pragma once
 
+#include <string>
+
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <string>
+#include <ssl_helpers/context.h>
+
 
 namespace ssl_helpers {
 namespace tests {
@@ -34,6 +37,8 @@ namespace tests {
     boost::filesystem::path create_readable_data_file(const size_t file_size, const std::string& file_name = {});
 
     void print_current_test_name();
+
+    context& default_context_with_crypto_api();
 
 } // namespace tests
 } // namespace ssl_helpers

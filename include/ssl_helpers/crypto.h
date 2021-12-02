@@ -1,10 +1,12 @@
 #pragma once
 
-#include <cstdlib>
+#include <cstddef>
 
 #include <string>
 #include <functional>
 #include <memory>
+
+#include <ssl_helpers/context.h>
 
 #include "crypto_types.h"
 
@@ -24,7 +26,8 @@ namespace ssl_helpers {
 class aes_encryption_stream
 {
 public:
-    aes_encryption_stream(const std::string& default_key = {},
+    aes_encryption_stream(const context&,
+                          const std::string& default_key = {},
                           const std::string& default_add = {});
     ~aes_encryption_stream();
 
@@ -55,7 +58,8 @@ private:
 class aes_decryption_stream
 {
 public:
-    aes_decryption_stream(const std::string& default_key = {},
+    aes_decryption_stream(const context&,
+                          const std::string& default_key = {},
                           const std::string& default_add = {});
     ~aes_decryption_stream();
 
@@ -84,7 +88,7 @@ private:
 // Improve crypto resistance by using PBKDF2.
 
 // Create random salt apply PBKDF2.
-salted_key_type aes_create_salted_key(const std::string& key);
+salted_key_type aes_create_salted_key(const context&, const std::string& key);
 
 // Apply PBKDF2 for input salt.
 std::string aes_get_salted_key(const std::string& key, const std::string& salt);
@@ -93,19 +97,22 @@ std::string aes_get_salted_key(const std::string& key, const aes_salt_type& salt
 
 // Encrypt data at once.
 
-std::string aes_encrypt(const std::string& plain_data, const std::string& key);
+std::string aes_encrypt(const context&, const std::string& plain_data, const std::string& key);
 
 // Provide authenticity of data with custom function.
-std::string aes_encrypt(const std::string& plain_data, const std::string& key,
+std::string aes_encrypt(const context&,
+                        const std::string& plain_data, const std::string& key,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag,
                         std::string& created_check_tag);
 
 // Decrypt data at once.
 
-std::string aes_decrypt(const std::string& cipher_data, const std::string& key);
+std::string aes_decrypt(const context&,
+                        const std::string& cipher_data, const std::string& key);
 
 // Provide authenticity of data with custom function.
-std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
+std::string aes_decrypt(const context&,
+                        const std::string& cipher_data, const std::string& key,
                         const std::string& check_tag,
                         std::function<std::string(const std::string& key, const std::string& cipher_data)> create_check_tag);
 
@@ -113,11 +120,15 @@ std::string aes_decrypt(const std::string& cipher_data, const std::string& key,
 // Encrypt file.
 // Use 'marker' argument like file type sign.
 
-aes_tag_type aes_encrypt_file(const std::string& path, const std::string& key, const std::string& marker = {});
+aes_tag_type aes_encrypt_file(const context& ctx,
+                              const std::string& path, const std::string& key,
+                              const std::string& marker = {});
 
 // Decrypt file.
 
-void aes_decrypt_file(const std::string& path, const std::string& key, const aes_tag_type& tag, const std::string& marker = {});
+void aes_decrypt_file(const context& ctx,
+                      const std::string& path, const std::string& key, const aes_tag_type& tag,
+                      const std::string& marker = {});
 
 
 // 'Flip' technique to transfer both encrypted data and key through unencrypted network.
@@ -134,17 +145,20 @@ void aes_decrypt_file(const std::string& path, const std::string& key, const aes
 
 // Encrypt data at once (Flip).
 
-flip_session_type aes_ecnrypt_flip(const std::string& plain_data,
+flip_session_type aes_ecnrypt_flip(const context&,
+                                   const std::string& plain_data,
                                    const std::string& instant_key,
                                    const std::string& marker = {},
                                    bool add_garbage = true);
 
 // Decrypt data at once (Flap).
 
-std::string aes_decrypt_flip(const flip_session_type& session_data,
+std::string aes_decrypt_flip(const context&,
+                             const flip_session_type& session_data,
                              const std::string& instant_key,
                              const std::string& marker = {});
-std::string aes_decrypt_flip(const std::string& cipher_data,
+std::string aes_decrypt_flip(const context&,
+                             const std::string& cipher_data,
                              const std::string& session_key,
                              const std::string& instant_key,
                              const std::string& marker = {});

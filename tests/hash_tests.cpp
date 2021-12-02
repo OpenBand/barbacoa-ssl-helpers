@@ -1,13 +1,13 @@
-#include "tests_common.h"
+#include <functional>
+#include <fstream>
+
+#include <boost/filesystem.hpp>
 
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/encoding.h>
 
-#include <functional>
+#include "tests_common.h"
 
-#include <fstream>
-
-#include <boost/filesystem.hpp>
 
 namespace ssl_helpers {
 namespace tests {
@@ -44,8 +44,8 @@ namespace tests {
 
         boost::filesystem::path temp = create_binary_data_file(12 * 1024);
 
-        auto h_data = func(temp.generic_string(), 0);
-        auto h_data_short = func(temp.generic_string(), limit);
+        auto h_data = func(default_context_with_crypto_api(), temp.generic_string(), 0);
+        auto h_data_short = func(default_context_with_crypto_api(), temp.generic_string(), limit);
 
         BOOST_REQUIRE(!h_data.empty());
         BOOST_REQUIRE(!h_data_short.empty());

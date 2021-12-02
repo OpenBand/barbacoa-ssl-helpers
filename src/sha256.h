@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include <openssl/sha.h>
 
-#include <string>
 
 namespace ssl_helpers {
 namespace impl {

@@ -1,15 +1,17 @@
+#include <ssl_helpers/shadowing.h>
+
 #include "crypto_stream_impl.h"
 
-#include <ssl_helpers/shadowing.h>
 
 namespace ssl_helpers {
 namespace impl {
 
-    __aes_encryption_stream::__aes_encryption_stream(const std::string& key, const std::string& add)
+    __aes_encryption_stream::__aes_encryption_stream(const context& ctx,
+                                                     const std::string& key, const std::string& add)
         : _add(add)
     {
         if (!key.empty())
-            _key_shadow = nxor_encode(key);
+            _key_shadow = nxor_encode_sec(ctx, key);
     }
 
     std::string __aes_encryption_stream::start(const std::string& key, const std::string& add)
@@ -34,11 +36,12 @@ namespace impl {
         return std::tuple_size<gcm_tag_type>::value;
     }
 
-    __aes_decryption_stream::__aes_decryption_stream(const std::string& key, const std::string& add)
+    __aes_decryption_stream::__aes_decryption_stream(const context& ctx,
+                                                     const std::string& key, const std::string& add)
         : _add(add)
     {
         if (!key.empty())
-            _key_shadow = nxor_encode(key);
+            _key_shadow = nxor_encode_sec(ctx, key);
     }
 
     void __aes_decryption_stream::start(const std::string& key, const std::string& add)

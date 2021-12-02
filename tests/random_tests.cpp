@@ -1,8 +1,9 @@
-#include "tests_common.h"
+#include <functional>
 
 #include <ssl_helpers/random.h>
 
-#include <functional>
+#include "tests_common.h"
+
 
 namespace ssl_helpers {
 namespace tests {
@@ -30,9 +31,9 @@ namespace tests {
     {
         print_current_test_name();
 
-        auto rnd1 = create_random();
-        auto rnd2 = create_random(12);
-        auto rnd3 = create_random(120);
+        auto rnd1 = create_random(default_context_with_crypto_api());
+        auto rnd2 = create_random(default_context_with_crypto_api(), 12);
+        auto rnd3 = create_random(default_context_with_crypto_api(), 120);
 
         // There is extremely low probability that rnd1 = rnd2 or rnd2 = rnd3:
 

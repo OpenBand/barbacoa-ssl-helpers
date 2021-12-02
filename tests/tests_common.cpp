@@ -1,9 +1,10 @@
-#include "tests_common.h"
+#include <fstream>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 
-#include <fstream>
-#include <sstream>
+#include "tests_common.h"
+
 
 namespace ssl_helpers {
 namespace tests {
@@ -76,6 +77,11 @@ namespace tests {
         ss << boost::unit_test::framework::current_test_case().p_name;
         ss << "]";
         DUMP_STR(ss.str());
+    }
+
+    context& default_context_with_crypto_api()
+    {
+        return context::init(context::configurate().enable_libcrypto_api());
     }
 
 } // namespace tests

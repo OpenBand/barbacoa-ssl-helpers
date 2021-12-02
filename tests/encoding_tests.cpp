@@ -1,6 +1,7 @@
+#include <ssl_helpers/encoding.h>
+
 #include "tests_common.h"
 
-#include <ssl_helpers/encoding.h>
 
 namespace ssl_helpers {
 namespace tests {

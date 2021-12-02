@@ -3,6 +3,7 @@
 #include <string>
 #include <chrono>
 
+
 namespace ssl_helpers {
 
 // Encode binary data to hexadecimal string

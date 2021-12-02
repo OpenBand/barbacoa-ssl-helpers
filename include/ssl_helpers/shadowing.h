@@ -3,6 +3,9 @@
 #include <string>
 #include <chrono>
 
+#include <ssl_helpers/context.h>
+
+
 namespace ssl_helpers {
 
 // Steganography helper to hide data in memory
@@ -10,6 +13,7 @@ namespace ssl_helpers {
 
 // Encrypt data
 
+std::string nxor_encode_sec(const context&, const std::string& secret);
 std::string nxor_encode(const std::string& secret);
 
 // Decrypt data

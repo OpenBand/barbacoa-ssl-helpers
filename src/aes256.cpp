@@ -1,8 +1,8 @@
-#include "ssl_helpers_defines.h"
+#include <cstring>
 
+#include "ssl_helpers_defines.h"
 #include "aes256.h"
 
-#include <cstring>
 
 namespace ssl_helpers {
 namespace impl {
@@ -51,8 +51,6 @@ namespace impl {
 
     aes_stream_encryptor::aes_stream_encryptor()
     {
-        init_openssl();
-
         _ctx = EVP_CIPHER_CTX_new();
 
         SSL_HELPERS_ASSERT(_ctx, ERR_error_string(ERR_get_error(), nullptr));
@@ -111,8 +109,6 @@ namespace impl {
 
     aes_stream_decryptor::aes_stream_decryptor()
     {
-        init_openssl();
-
         _ctx = EVP_CIPHER_CTX_new();
 
         SSL_HELPERS_ASSERT(_ctx, ERR_error_string(ERR_get_error(), nullptr));
@@ -167,11 +163,6 @@ namespace impl {
         SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
 
         SSL_HELPERS_ASSERT(!len_);
-    }
-
-    aes_block::aes_block()
-    {
-        init_openssl();
     }
 
     unsigned aes_block::encrypt(unsigned char* plain_data, int plain_data_len, unsigned char* key,

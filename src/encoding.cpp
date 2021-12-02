@@ -1,11 +1,12 @@
 #include <ssl_helpers/encoding.h>
 
+#include <algorithm>
+#include <set>
+
 #include "convert_helper.h"
 #include "base58.h"
 #include "base64.h"
 
-#include <algorithm>
-#include <set>
 
 namespace ssl_helpers {
 

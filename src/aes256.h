@@ -2,13 +2,21 @@
 
 #include <string>
 #include <vector>
-
-#include "openssl.h"
-
 #include <array>
+
+#include <openssl/ec.h>
+#include <openssl/crypto.h>
+#include <openssl/evp.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
+#include <openssl/ecdsa.h>
+#include <openssl/ecdh.h>
+#include <openssl/sha.h>
+#include <openssl/obj_mac.h>
 
 #include "sha256.h"
 #include "sha512.h"
+
 
 namespace ssl_helpers {
 namespace impl {
@@ -93,7 +101,7 @@ namespace impl {
     class aes_block
     {
     public:
-        aes_block();
+        aes_block() = default;
 
         // Key and init value (initialization vector) are set in common complicated 512 passphrase
         std::vector<char> encrypt(const sha512& key, const char* plain_data, size_t len);
