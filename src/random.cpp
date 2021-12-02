@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cstring>
+#include <vector>
 
 #include <openssl/rand.h>
 
@@ -64,4 +65,28 @@ uint64_t create_random(const context& ctx, const uint64_t offset)
     }
     return 0;
 }
+
+std::string create_random_string(const context& ctx, const size_t size, bool fixed)
+{
+    try
+    {
+        SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
+        SSL_HELPERS_ASSERT(size > 0, "Size required");
+        SSL_HELPERS_ASSERT(fixed || size > 2, "Appropriate size required for not fixed result");
+
+        const size_t sz = (fixed) ? (size) : (size / 2 + (create_random(ctx) + 1) % (size / 2));
+
+        std::vector<uint8_t> buff(sz);
+
+        SSL_HELPERS_ASSERT(RAND_bytes(buff.data(), sz) == 1, "Libcrypto RAND failed");
+
+        return std::string(reinterpret_cast<char*>(buff.data()), sz);
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ASSERT(false, e.what());
+    }
+    return {};
+}
+
 } // namespace ssl_helpers

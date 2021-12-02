@@ -17,6 +17,22 @@ For Windows *OpenSSL for Windows* is required. Check
 %OPENSSL_ROOT_DIR%, %OPENSSL_CRYPTO_LIBRARY% environment variables and 
 libeay32.dll
 
+# Usage
+
+Some functions require user configuration and preliminary initialization for OpenSSL Libcrypto API. 
+Use singleton object _ssl_helpers::context_ if required. For example:
+
+```cpp
+// Before any thread creation
+auto buff_sz = some_magic_to_discover_optimal_buffer_size();
+auto &ssl_config = context::configurate().enable_libcrypto_api().set_file_buffer_size(buff_sz);
+auto &ssl_ctx = ssl_helpers::context::init(ssl_config);
+
+// In business logic
+ssl_helpers::aes_encrypt_file(ssl_ctx, secret_file, secret_key);
+ssl_helpers::aes_encrypt_file(ssl_ctx, shredded_file, ssl_helpers::create_random_string(ssl_ctx, 13));
+```
+
 # Features
 
 * Encoding (baseXX, hex, printable)
