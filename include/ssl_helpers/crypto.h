@@ -118,6 +118,24 @@ std::string aes_decrypt(const context&,
 
 
 // Encrypt file.
+// WARNING:
+//      This function encode file inplace with only std and boost::filesystem
+//      crossplatform functions.
+//      Therefore it is not atomic and should create corrupted result if some
+//      other process or thread modify this file at the same time.
+//
+//      There are no ways to do it atomic without platform specific logic
+//      and it will be pretty difficult for some platform and solution
+//      will be depended on bussiness logic (for your application targets)
+//
+// RECOMMENDATION:
+//      It is more safe to use this function if you copy file to temporary
+//      safty path before (for instance mapped in memory) and replace initial file after.
+//      It is possible to do smart atomic replace function for certain platform
+//      if you expect guarantees that initial file plane data chunks will be
+//      deleted from disk after encryption or not just marked by file system
+//      as deleted and can be restored.
+
 // Use 'marker' argument like file type sign.
 
 aes_tag_type aes_encrypt_file(const context& ctx,

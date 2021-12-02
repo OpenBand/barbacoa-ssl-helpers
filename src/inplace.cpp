@@ -113,15 +113,6 @@ namespace impl {
 
             f.close();
 
-            // std::fstream can't change filesize :((
-            // but in Python I can
-            //
-            // TODO: 1. find way to remove this hack! (without additional reopen),
-            //       2. lock file while this modification
-            //       3. use memory mapping
-            //
-            // This method should be speed and safety
-            //
             if (!external_rest.empty())
             {
                 bf::resize_file(path_, total_result_sz + external_rest.size());
