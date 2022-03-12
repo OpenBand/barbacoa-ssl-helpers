@@ -30,8 +30,7 @@ auto &ssl_config = context::configurate().enable_libcrypto_api().set_file_buffer
 auto &ssl_ctx = ssl_helpers::context::init(ssl_config);
 
 // In business logic if context required.
-auto check_tag = ssl_helpers::aes_encrypt_file(ssl_ctx, 
-                                               secret_file, secret_key);
+ssl_helpers::aes_encrypt_file(ssl_ctx, secret_file, secret_key);
 auto or_check_hash = ssl_helpers::create_sha256_from_file(ssl_ctx,
                                                           secret_file);
 
