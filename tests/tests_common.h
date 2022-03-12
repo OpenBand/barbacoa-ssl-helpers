@@ -24,7 +24,10 @@ namespace tests {
 
     std::string create_test_data(const size_t size = 13);
     boost::filesystem::path create_binary_data_file(const size_t file_size);
-    boost::filesystem::path create_readable_data_file(const size_t file_size, const std::string& file_name = {});
+    boost::filesystem::path create_readable_data_file(const std::string& content,
+                                                      const size_t file_size,
+                                                      const std::string& file_name = {});
+    std::string get_file_content(const boost::filesystem::path&);
 
     void print_current_test_name();
 

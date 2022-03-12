@@ -53,7 +53,10 @@ namespace tests {
         return temp;
     }
 
-    boost::filesystem::path create_readable_data_file(const size_t file_size, const std::string& file_name)
+    boost::filesystem::path create_readable_data_file(
+        const std::string& content,
+        const size_t file_size,
+        const std::string& file_name)
     {
         BOOST_REQUIRE_GT(file_size, 0u);
 
@@ -61,13 +64,19 @@ namespace tests {
         path temp = boost::filesystem::temp_directory_path() / ((file_name.empty()) ? boost::filesystem::unique_path() : path { file_name });
         std::ofstream output { temp.generic_string(), std::ofstream::binary };
 
-        constexpr size_t BUFF_SZ = 1024;
+        std::string readable;
+        if (!content.empty())
+            readable = content;
+        else
+        {
+            constexpr size_t BUFF_SZ = 1024;
+            readable = std::string(BUFF_SZ, 'A');
+        }
         size_t total = 0;
         while (true)
         {
-            std::string readable(BUFF_SZ, 'A');
 
-            size_t to_write = std::min(BUFF_SZ, file_size - total);
+            size_t to_write = std::min(readable.size(), file_size - total);
             output.write(readable.data(), to_write);
             total += to_write;
             if (total >= file_size)
@@ -75,6 +84,16 @@ namespace tests {
         }
 
         return temp;
+    }
+
+    std::string get_file_content(const boost::filesystem::path& path)
+    {
+        std::ifstream f(path.generic_string(), std::ifstream::binary | std::ifstream::out);
+
+        std::stringstream ss;
+        ss << f.rdbuf();
+
+        return ss.str();
     }
 
     void print_current_test_name()

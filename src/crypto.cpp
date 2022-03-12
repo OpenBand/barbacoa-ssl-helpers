@@ -139,6 +139,18 @@ void aes_decryption_stream::finalize(const aes_tag_type& tag)
     }
 }
 
+void aes_decryption_stream::finalize()
+{
+    try
+    {
+        _impl->finalize({ 0 });
+    }
+    catch (std::exception& e)
+    {
+        SSL_HELPERS_ASSERT(false, e.what());
+    }
+}
+
 salted_key_type aes_create_salted_key(const context& ctx, const std::string& key)
 {
     try
@@ -272,10 +284,10 @@ std::string aes_decrypt(const context& ctx,
     return {};
 }
 
-aes_tag_type aes_encrypt_file(const context& ctx,
-                              const std::string& path,
-                              const std::string& key,
-                              const std::string& add)
+std::string aes_encrypt_file(const context& ctx,
+                             const std::string& path,
+                             const std::string& key,
+                             const std::string& add)
 {
     try
     {
@@ -295,7 +307,7 @@ aes_tag_type aes_encrypt_file(const context& ctx,
         auto result = impl::modify_binary_inplace(path, ctx().file_buffer_size(), modification_rule, 0);
         SSL_HELPERS_ASSERT(result.second = result.first + add.size());
 
-        return stream.finalize();
+        return aes_to_string(stream.finalize());
     }
     catch (std::exception& e)
     {
@@ -307,8 +319,8 @@ aes_tag_type aes_encrypt_file(const context& ctx,
 void aes_decrypt_file(const context& ctx,
                       const std::string& path,
                       const std::string& key,
-                      const aes_tag_type& tag,
-                      const std::string& add)
+                      const std::string& add,
+                      const std::string& tag)
 {
     try
     {
@@ -326,7 +338,14 @@ void aes_decrypt_file(const context& ctx,
         auto result = impl::modify_binary_inplace(path, ctx().file_buffer_size(), modification_rule, add.size());
         SSL_HELPERS_ASSERT(result.second = result.first - add.size());
 
-        stream.finalize(tag);
+        if (!tag.empty())
+        {
+            stream.finalize(aes_from_string(tag));
+        }
+        else
+        {
+            stream.finalize();
+        }
     }
     catch (std::exception& e)
     {

@@ -66,6 +66,9 @@ public:
     // Finalize decryption session and check stream tag.
     void finalize(const aes_tag_type& tag);
 
+    // Finalize decryption without check (for custom implementation)
+    void finalize();
+
 private:
     std::unique_ptr<impl::__aes_decryption_stream> _impl;
 };
@@ -124,15 +127,16 @@ std::string aes_decrypt(const context&,
 
 // Use 'marker' argument like file type sign.
 
-aes_tag_type aes_encrypt_file(const context& ctx,
-                              const std::string& path, const std::string& key,
-                              const std::string& marker = {});
+std::string aes_encrypt_file(const context& ctx,
+                             const std::string& path, const std::string& key,
+                             const std::string& marker = {});
 
 // Decrypt file.
 
 void aes_decrypt_file(const context& ctx,
-                      const std::string& path, const std::string& key, const aes_tag_type& tag,
-                      const std::string& marker = {});
+                      const std::string& path, const std::string& key,
+                      const std::string& marker = {},
+                      const std::string& tag = {});
 
 
 // 'Flip/Flap' technique to transfer both encrypted data and key through unencrypted network.

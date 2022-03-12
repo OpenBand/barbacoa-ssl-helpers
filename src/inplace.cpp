@@ -27,21 +27,15 @@ namespace impl {
             size_t total_input_sz = bf::file_size(path_);
             size_t total_result_sz = 0;
 
-            std::fstream f(path, std::ifstream::binary | std::ifstream::in | std::ifstream::out);
+            std::fstream f(path, std::fstream::binary | std::fstream::in | std::fstream::out);
 
-            std::string rest, external_rest;
+            std::string rest;
 
-            auto write_wrapper = [&external_rest, &total_input_sz, &total_result_sz, &f](const char* data, size_t sz) {
-                if (total_result_sz + sz > total_input_sz)
-                {
-                    auto sz_ = total_input_sz - total_result_sz;
-                    auto offset = sz - sz_;
-                    sz = sz_;
-                    external_rest.append(data + sz_, offset);
-                }
+            auto write_wrapper = [&f, &total_result_sz](const char* data, size_t sz) {
                 if (sz > 0)
                 {
                     f.write(data, sz);
+                    SSL_HELPERS_ASSERT(!f.bad(), strerror(errno));
                     total_result_sz += sz;
                 }
             };
@@ -49,7 +43,7 @@ namespace impl {
             size_t pos_r = (pass_header_bytes > 0) ? pass_header_bytes : 0;
             size_t pos_w = 0;
 
-            while (true)
+            while (pos_r < total_input_sz)
             {
                 f.seekg(pos_r);
                 std::vector<char> vchunk;
@@ -75,7 +69,16 @@ namespace impl {
                     rest_sz -= vchunk_.size();
                 }
 
-                pos_r = f.tellg();
+                if (!f.eof())
+                {
+                    pos_r = f.tellg();
+                }
+                else
+                {
+                    pos_r = total_input_sz;
+                    // Restore stream state if previous read reached EOF
+                    f.clear();
+                }
                 f.seekg(pos_w);
 
                 // Write rest bytes
@@ -93,40 +96,27 @@ namespace impl {
                 SSL_HELPERS_ASSERT(!chunk_.empty(), "Empty modification");
                 auto result_sz = chunk_.size();
                 auto left = pos_r - pos_w;
-                if (left > 0)
-                {
-                    if (left >= result_sz)
-                        write_wrapper(chunk_.data(), chunk_.size());
-                    else
-                    {
-                        write_wrapper(chunk_.substr(0, left).data(), left);
-                        rest = chunk_.substr(left);
-                    }
-                }
+                if (left >= result_sz)
+                    write_wrapper(chunk_.data(), chunk_.size());
                 else
                 {
-                    write_wrapper(chunk_.data(), chunk_.size());
-                    break;
+                    write_wrapper(chunk_.substr(0, left).data(), left);
+                    rest = chunk_.substr(left);
                 }
                 pos_w = f.tellg();
             }
 
-            f.close();
-
-            if (!external_rest.empty())
+            if (!rest.empty())
             {
-                bf::resize_file(path_, total_result_sz + external_rest.size());
-
-                f.open(path, std::ifstream::binary | std::ifstream::in | std::ifstream::out);
+                f.clear();
                 f.seekg(total_result_sz);
-                f.write(external_rest.data(), external_rest.size());
-                total_result_sz += external_rest.size();
-                f.close();
+                write_wrapper(rest.data(), rest.size());
             }
-            else
+            else if (total_input_sz != total_result_sz)
             {
                 bf::resize_file(path_, total_result_sz);
             }
+            f.close();
 
             return std::make_pair(total_input_sz, total_result_sz);
         }

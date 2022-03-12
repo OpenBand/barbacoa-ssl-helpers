@@ -154,13 +154,17 @@ namespace impl {
 
     void aes_stream_decryptor::finalize(gcm_tag_type& tag)
     {
+        static gcm_tag_type null_tag = { 0 };
         int len_ = 0;
 
-        auto cypher_fin_result_1 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, 16, (void*)tag.data()));
-        SSL_HELPERS_ASSERT(cypher_fin_result_1, ERR_error_string(ERR_get_error(), nullptr));
+        if (std::memcmp(tag.data(), null_tag.data(), tag.size()))
+        {
+            auto cypher_fin_result_1 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, 16, (void*)tag.data()));
+            SSL_HELPERS_ASSERT(cypher_fin_result_1, ERR_error_string(ERR_get_error(), nullptr));
 
-        auto cypher_fin_result_2 = (1 == EVP_DecryptFinal_ex(_ctx, NULL, &len_));
-        SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
+            auto cypher_fin_result_2 = (1 == EVP_DecryptFinal_ex(_ctx, NULL, &len_));
+            SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
+        }
 
         SSL_HELPERS_ASSERT(!len_);
     }
