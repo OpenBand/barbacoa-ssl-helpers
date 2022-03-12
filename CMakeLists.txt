@@ -38,6 +38,7 @@ set(SSL_HELPERS_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/inplace.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/config.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dh.cpp"
 )
 file(GLOB_RECURSE SSL_HELPERS_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"

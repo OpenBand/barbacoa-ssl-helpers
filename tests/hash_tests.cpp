@@ -1,4 +1,3 @@
-#include <functional>
 #include <fstream>
 
 #include <boost/filesystem.hpp>

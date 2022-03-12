@@ -19,4 +19,10 @@ config& config::enable_libcrypto_api()
     return *this;
 }
 
+config& config::set_ec_domain_group(const EC_GROUP_DOMAIN ec_group_domain)
+{
+    _ec_group_domain = ec_group_domain;
+    return *this;
+}
+
 } // namespace ssl_helpers

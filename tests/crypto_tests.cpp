@@ -1,6 +1,3 @@
-#include <functional>
-#include <sstream>
-
 #include <boost/filesystem.hpp>
 
 #include <ssl_helpers/crypto.h>

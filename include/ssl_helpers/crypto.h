@@ -135,7 +135,7 @@ void aes_decrypt_file(const context& ctx,
                       const std::string& marker = {});
 
 
-// 'Flip' technique to transfer both encrypted data and key through unencrypted network.
+// 'Flip/Flap' technique to transfer both encrypted data and key through unencrypted network.
 // Idea is suppose data are transferred by three chunks separated in time
 // and useless individually.
 // This chunks are not classical cipher data, initialization vector
