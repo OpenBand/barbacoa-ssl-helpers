@@ -51,6 +51,7 @@ Have a look at tests for details.
 
 * Encoding (baseXX, hex, printable)
 * Hash calculation (SHA-X, RIPEMD-160, etc.)
-* Cryptography (AES-CBC, AES-GSM, etc.)
+* Symmetric Cryptography (AES-CBC, AES-GSM, etc.)
+* Asymmetric Cryptography (Elliptic Curve Diffie Hellman)
 * Random data generator
 
