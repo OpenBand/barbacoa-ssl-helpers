@@ -49,20 +49,22 @@ namespace impl {
         return to_string_impl<aes_256bit_type>(data);
     }
 
-    aes_stream_encryptor::aes_stream_encryptor()
-    {
-        _ctx = EVP_CIPHER_CTX_new();
-
-        SSL_HELPERS_ASSERT(_ctx, ERR_error_string(ERR_get_error(), nullptr));
-    }
-
     aes_stream_encryptor::~aes_stream_encryptor()
     {
-        EVP_CIPHER_CTX_free(_ctx);
+        if (_ctx)
+        {
+            EVP_CIPHER_CTX_free(_ctx);
+        }
     }
 
     void aes_stream_encryptor::init(const gcm_key_type& key, const gcm_iv_type& init_value)
     {
+        SSL_HELPERS_ASSERT(_ctx == nullptr, "Previous context should be deleted before");
+
+        _ctx = EVP_CIPHER_CTX_new();
+
+        SSL_HELPERS_ASSERT(_ctx != nullptr, ERR_error_string(ERR_get_error(), nullptr));
+
         auto cypher_init_result = (1 == EVP_EncryptInit_ex(_ctx, EVP_aes_256_gcm(), NULL, NULL, NULL));
         SSL_HELPERS_ASSERT(cypher_init_result, ERR_error_string(ERR_get_error(), nullptr));
 
@@ -75,6 +77,8 @@ namespace impl {
 
     void aes_stream_encryptor::set_add(const char* aad, size_t len)
     {
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
+
         int len_ = 0;
 
         auto cypher_init_result = (1 == EVP_EncryptUpdate(_ctx, NULL, &len_, (unsigned char*)aad, len));
@@ -83,9 +87,9 @@ namespace impl {
 
     size_t aes_stream_encryptor::process(const char* plain_chunk, size_t len, char* cipher_chunk)
     {
-        int cipher_data_len = 0;
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
 
-        SSL_HELPERS_ASSERT(_ctx);
+        int cipher_data_len = 0;
 
         auto cypher_encode_result = (1 == EVP_EncryptUpdate(_ctx, (unsigned char*)cipher_chunk, &cipher_data_len, (const unsigned char*)plain_chunk, len));
         SSL_HELPERS_ASSERT(cypher_encode_result, ERR_error_string(ERR_get_error(), nullptr));
@@ -96,6 +100,8 @@ namespace impl {
 
     void aes_stream_encryptor::finalize(gcm_tag_type& tag)
     {
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
+
         int len_ = 0;
 
         auto cypher_fin_result_1 = (1 == EVP_EncryptFinal_ex(_ctx, NULL, &len_));
@@ -105,22 +111,28 @@ namespace impl {
 
         auto cypher_fin_result_2 = (1 == EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_GET_TAG, 16, tag.data()));
         SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
-    }
 
-    aes_stream_decryptor::aes_stream_decryptor()
-    {
-        _ctx = EVP_CIPHER_CTX_new();
+        EVP_CIPHER_CTX_free(_ctx);
 
-        SSL_HELPERS_ASSERT(_ctx, ERR_error_string(ERR_get_error(), nullptr));
+        _ctx = nullptr;
     }
 
     aes_stream_decryptor::~aes_stream_decryptor()
     {
-        EVP_CIPHER_CTX_free(_ctx);
+        if (_ctx)
+        {
+            EVP_CIPHER_CTX_free(_ctx);
+        }
     }
 
     void aes_stream_decryptor::init(const gcm_key_type& key, const gcm_iv_type& init_value)
     {
+        SSL_HELPERS_ASSERT(_ctx == nullptr, "Previous context should be deleted before");
+
+        _ctx = EVP_CIPHER_CTX_new();
+
+        SSL_HELPERS_ASSERT(_ctx != nullptr, ERR_error_string(ERR_get_error(), nullptr));
+
         auto cypher_init_result = (1 == EVP_DecryptInit_ex(_ctx, EVP_aes_256_gcm(), NULL, NULL, NULL));
         SSL_HELPERS_ASSERT(cypher_init_result, ERR_error_string(ERR_get_error(), nullptr));
 
@@ -133,6 +145,8 @@ namespace impl {
 
     void aes_stream_decryptor::set_add(const char* aad, size_t len)
     {
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
+
         int len_ = 0;
 
         auto cypher_init_result = (1 == EVP_DecryptUpdate(_ctx, NULL, &len_, (unsigned char*)aad, len));
@@ -141,9 +155,9 @@ namespace impl {
 
     size_t aes_stream_decryptor::process(const char* cipher_chunk, size_t len, char* plain_chunk)
     {
-        int plain_data_len = 0;
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
 
-        SSL_HELPERS_ASSERT(_ctx);
+        int plain_data_len = 0;
 
         auto cypher_decode_result = (1 == EVP_DecryptUpdate(_ctx, (unsigned char*)plain_chunk, &plain_data_len, (const unsigned char*)cipher_chunk, len));
         SSL_HELPERS_ASSERT(cypher_decode_result, ERR_error_string(ERR_get_error(), nullptr));
@@ -154,6 +168,8 @@ namespace impl {
 
     void aes_stream_decryptor::finalize(gcm_tag_type& tag)
     {
+        SSL_HELPERS_ASSERT(_ctx != nullptr, "Context required");
+
         static gcm_tag_type null_tag = { 0 };
         int len_ = 0;
 
@@ -164,9 +180,13 @@ namespace impl {
 
             auto cypher_fin_result_2 = (1 == EVP_DecryptFinal_ex(_ctx, NULL, &len_));
             SSL_HELPERS_ASSERT(cypher_fin_result_2, ERR_error_string(ERR_get_error(), nullptr));
+
+            SSL_HELPERS_ASSERT(!len_);
         }
 
-        SSL_HELPERS_ASSERT(!len_);
+        EVP_CIPHER_CTX_free(_ctx);
+
+        _ctx = nullptr;
     }
 
     unsigned aes_block::encrypt(unsigned char* plain_data, int plain_data_len, unsigned char* key,
@@ -189,6 +209,8 @@ namespace impl {
         auto cypher_final_result = (1 == EVP_EncryptFinal_ex(ctx, cipher_data + len, &len));
         SSL_HELPERS_ASSERT(cypher_final_result, ERR_error_string(ERR_get_error(), nullptr));
         cipher_data_len += len;
+
+        EVP_CIPHER_CTX_free(ctx);
 
         return cipher_data_len;
     }
@@ -213,6 +235,8 @@ namespace impl {
         auto cypher_final_result = (1 == EVP_DecryptFinal_ex(ctx, plain_data + len, &len));
         SSL_HELPERS_ASSERT(cypher_final_result, ERR_error_string(ERR_get_error(), nullptr));
         plain_data_len += len;
+
+        EVP_CIPHER_CTX_free(ctx);
 
         return plain_data_len;
     }

@@ -16,9 +16,11 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Secret Key" };
 
         auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
@@ -35,9 +37,34 @@ namespace tests {
     {
         print_current_test_name();
 
+        const size_t data_sz = 1024;
+
+        std::string data = create_test_data(data_sz);
+
         const std::string key { "Secret Key" };
 
-        std::string data = create_test_data(1024);
+        auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
+
+        BOOST_REQUIRE(!cipher_data.empty());
+
+        auto data_ = aes_decrypt(default_context_with_crypto_api(), cipher_data, key);
+
+        BOOST_REQUIRE(!data_.empty());
+
+        BOOST_REQUIRE_EQUAL(data, data_);
+    }
+
+    BOOST_AUTO_TEST_CASE(basic_odd_encryption_check)
+    {
+        print_current_test_name();
+
+        const size_t odd_sz = 123;
+
+        std::string data = create_test_data(odd_sz);
+
+        BOOST_REQUIRE_EQUAL(data.size(), odd_sz);
+
+        const std::string key { "Secret Key" };
 
         auto cipher_data = aes_encrypt(default_context_with_crypto_api(), data, key);
 
@@ -54,9 +81,11 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Secret Key" };
 
         auto create_check_tag = [](const std::string& key, const std::string& cipher_data) {
             std::string ss;
@@ -85,11 +114,11 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
-
-        constexpr size_t chunk_size = 512;
+        constexpr size_t chunk_size = 256;
 
         std::string data = create_test_data(chunk_size * 3);
+
+        const std::string key { "Secret Key" };
 
         const std::string ADD_MARK { "AAA" };
         std::string ciphertext_stream_data;
@@ -180,9 +209,11 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Secret Key" };
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -209,10 +240,12 @@ namespace tests {
     {
         print_current_test_name();
 
+        const size_t data_sz = 1024;
+
         std::string add_mark { "(a)" };
         const std::string key { "Secret Key" };
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -239,12 +272,14 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
+
+        const std::string key { "Secret Key" };
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
         ciphertext_stream_data.append(enc_stream.start(key));
@@ -269,12 +304,14 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
+
+        const std::string key { "Secret Key" };
 
         aes_encryption_stream enc_stream(default_context_with_crypto_api());
         ciphertext_stream_data.append(enc_stream.start(key));
@@ -302,10 +339,12 @@ namespace tests {
     {
         print_current_test_name();
 
+        const size_t data_sz = 1024;
+
+        std::string data = create_test_data(data_sz);
+
         std::string add_mark { "(a)" };
         const std::string key { "Secret Key" };
-
-        std::string data = create_test_data(1024);
 
         std::string ciphertext_stream_data;
         ciphertext_stream_data.reserve(data.size() + 16);
@@ -332,13 +371,75 @@ namespace tests {
         BOOST_REQUIRE_EQUAL(data, data_);
     }
 
+    BOOST_AUTO_TEST_CASE(stream_odd_size_check)
+    {
+        print_current_test_name();
+
+        const size_t odd_sz = 123;
+
+        std::string data = create_test_data(odd_sz);
+
+        BOOST_REQUIRE_EQUAL(data.size(), odd_sz);
+
+        DUMP_STR(to_printable(data));
+
+        const std::string key { "Secret Key" };
+
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
+        auto ecrypted_data = enc_stream.start(key);
+        ecrypted_data.append(enc_stream.encrypt(data));
+        enc_stream.finalize();
+
+        DUMP_STR(to_printable(ecrypted_data));
+
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
+        dec_stream.start(key);
+        auto data2 = dec_stream.decrypt(ecrypted_data);
+        dec_stream.finalize();
+
+        BOOST_REQUIRE_EQUAL(data, data2);
+    }
+
+    BOOST_AUTO_TEST_CASE(stream_invalid_usage_check)
+    {
+        print_current_test_name();
+
+        const size_t data_sz = 256;
+
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Secret Key" };
+
+        aes_encryption_stream enc_stream(default_context_with_crypto_api());
+
+        BOOST_REQUIRE_THROW(enc_stream.encrypt(data), std::logic_error);
+        BOOST_REQUIRE_THROW(enc_stream.finalize(), std::logic_error);
+
+        auto ecrypted_data = enc_stream.start(key);
+        ecrypted_data.append(enc_stream.encrypt(data));
+        enc_stream.finalize();
+
+        aes_decryption_stream dec_stream(default_context_with_crypto_api());
+
+        BOOST_REQUIRE_THROW(dec_stream.decrypt(ecrypted_data), std::logic_error);
+        BOOST_REQUIRE_THROW(dec_stream.finalize(), std::logic_error);
+
+        dec_stream.start(key);
+        auto data2 = dec_stream.decrypt(ecrypted_data);
+        dec_stream.finalize();
+
+        BOOST_REQUIRE_EQUAL(data, data2);
+    }
+
     BOOST_AUTO_TEST_CASE(salted_key_check)
     {
         print_current_test_name();
 
-        const std::string key { "Simple Key" };
+        const size_t data_sz = 1024;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Simple Key" };
 
         std::vector<std::string> cipher_key_history;
         std::vector<std::string> salt_history;
@@ -381,9 +482,11 @@ namespace tests {
     {
         print_current_test_name();
 
-        const std::string key { "Secret Key" };
+        const size_t data_sz = 256;
 
-        std::string data = create_test_data(1024);
+        std::string data = create_test_data(data_sz);
+
+        const std::string key { "Secret Key" };
 
         auto store_chunk = [](std::stringstream& ss, const std::string& chunk) {
             size_t sz = chunk.size();
@@ -404,34 +507,43 @@ namespace tests {
         std::stringstream encryption_ss;
         aes_encryption_stream enc(default_context_with_crypto_api(), key, "x");
 
-        store_chunk(encryption_ss, enc.start());
-        store_chunk(encryption_ss, enc.encrypt(data + "1"));
-        store_chunk(encryption_ss, aes_to_string(enc.finalize()));
-
-        payload.append(data + "1");
+        std::string input_chunk = data + "--S1--";
 
         store_chunk(encryption_ss, enc.start());
-        store_chunk(encryption_ss, enc.encrypt(data + data + "2"));
+        store_chunk(encryption_ss, enc.encrypt(input_chunk));
         store_chunk(encryption_ss, aes_to_string(enc.finalize()));
 
-        payload.append(data + data + "2");
+        payload.append(input_chunk);
+
+        input_chunk = data + data + "--S2--";
+
+        store_chunk(encryption_ss, enc.start());
+        store_chunk(encryption_ss, enc.encrypt(input_chunk));
+        store_chunk(encryption_ss, aes_to_string(enc.finalize()));
+
+        payload.append(input_chunk);
 
         const std::string new_key { "New Key Only For One Next Session" };
 
+        input_chunk = data + data + "--S3--";
+
         store_chunk(encryption_ss, enc.start(new_key));
-        store_chunk(encryption_ss, enc.encrypt(data + data + "3"));
+        store_chunk(encryption_ss, enc.encrypt(input_chunk));
         store_chunk(encryption_ss, aes_to_string(enc.finalize()));
 
-        payload.append(data + data + "3");
+        payload.append(input_chunk);
+
+        input_chunk = data + "--S4--";
 
         // Restore previous key but use new ADD
         store_chunk(encryption_ss, enc.start({}, "x2"));
-        store_chunk(encryption_ss, enc.encrypt(data + "4"));
+        store_chunk(encryption_ss, enc.encrypt(input_chunk));
         store_chunk(encryption_ss, aes_to_string(enc.finalize()));
 
-        payload.append(data + "4");
+        payload.append(input_chunk);
 
-        DUMP_STR(to_base64(encryption_ss.str()));
+        DUMP_STR(to_printable(payload));
+        DUMP_STR(to_printable(encryption_ss.str()));
 
         std::string payload_;
         aes_decryption_stream dec(default_context_with_crypto_api(), key, "x");
@@ -721,7 +833,9 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data = create_test_data(1024);
+        const size_t data_sz = 1024;
+
+        std::string data = create_test_data(data_sz);
 
         DUMP_STR(to_printable(data));
 
@@ -747,7 +861,9 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data = create_test_data(1024);
+        const size_t data_sz = 1024;
+
+        std::string data = create_test_data(data_sz);
 
         DUMP_STR(to_printable(data));
 
@@ -777,7 +893,9 @@ namespace tests {
     {
         print_current_test_name();
 
-        std::string data = create_test_data(1024);
+        const size_t data_sz = 1024;
+
+        std::string data = create_test_data(data_sz);
 
         DUMP_STR(to_printable(data));
 

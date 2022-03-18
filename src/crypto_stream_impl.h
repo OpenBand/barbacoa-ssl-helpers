@@ -41,12 +41,14 @@ namespace impl {
             if (!add.empty())
                 _context.set_add(add.data(), add.size());
 
+            _state = state::initialized;
+
             return add;
         }
 
         std::string process(const std::string& plain_chunk)
         {
-            SSL_HELPERS_ASSERT(_state == state::finalized || _state == state::processing, "Invalid state");
+            SSL_HELPERS_ASSERT(_state == state::initialized || _state == state::processing, "Invalid state");
 
             _state = state::processing;
 

@@ -42,7 +42,7 @@ namespace impl {
     class aes_stream_encryptor
     {
     public:
-        aes_stream_encryptor();
+        aes_stream_encryptor() = default;
         ~aes_stream_encryptor();
 
         void init(const gcm_key_type& key, const gcm_iv_type& init_value);
@@ -70,7 +70,7 @@ namespace impl {
     class aes_stream_decryptor
     {
     public:
-        aes_stream_decryptor();
+        aes_stream_decryptor() = default;
         ~aes_stream_decryptor();
 
         void init(const gcm_key_type& key, const gcm_iv_type& init_value);
