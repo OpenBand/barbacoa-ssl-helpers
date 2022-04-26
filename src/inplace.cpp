@@ -1,4 +1,3 @@
-#include <fstream>
 #include <vector>
 
 #include "ssl_helpers_defines.h"
@@ -8,117 +7,153 @@
 namespace ssl_helpers {
 namespace impl {
 
-    modify_binary_result_type modify_binary_inplace(const std::string& path,
+    file_context::file_context(const std::string& path)
+    {
+        SSL_HELPERS_ASSERT(path.size() > 0, "File required");
+
+        namespace bf = boost::filesystem;
+
+        _path = path;
+
+        SSL_HELPERS_ASSERT(bf::exists(_path) && bf::is_regular_file(_path), "File required");
+
+        _sz = bf::file_size(_path);
+
+        SSL_HELPERS_ASSERT(_sz > 0, "Empty file");
+
+        _pf = std::make_unique<std::fstream>(path, std::fstream::binary | std::fstream::in | std::fstream::out);
+
+        SSL_HELPERS_ASSERT(valid(true));
+    }
+
+    file_context::operator bool() const
+    {
+        return valid(true);
+    }
+
+    void file_context::resize(size_t new_sz)
+    {
+        boost::filesystem::resize_file(_path, new_sz);
+    }
+
+    std::fstream& file_context::stream()
+    {
+        SSL_HELPERS_ASSERT(valid(false), "Invalid file");
+        return *_pf;
+    }
+
+    bool file_context::valid(bool check_state) const
+    {
+        if (!_sz || !_pf)
+            return false;
+        return !check_state || _pf->good();
+    }
+
+    modify_binary_result_type modify_binary_inplace(file_context& file,
                                                     size_t chunk_sz,
                                                     modification_rule_type modification_rule,
-                                                    size_t pass_header_bytes)
+                                                    const std::string& header)
     {
-
         try
         {
             SSL_HELPERS_ASSERT(chunk_sz > 0);
 
-            namespace bf = boost::filesystem;
+            SSL_HELPERS_ASSERT(file, "Invalid file");
+            SSL_HELPERS_ASSERT(!file.stream().tellg(), "Zero start position expected");
 
-            bf::path path_ { path };
+            const size_t total_input_sz = file.size();
+            size_t input_sz = total_input_sz;
+            size_t total_output_sz = 0;
 
-            SSL_HELPERS_ASSERT(bf::exists(path_) && bf::is_regular_file(path_), "File path required");
+            auto read_wrapper = [&](size_t sz) -> std::string {
+                SSL_HELPERS_ASSERT(input_sz > 0);
+                SSL_HELPERS_ASSERT(!file.stream().bad(), strerror(errno));
 
-            size_t total_input_sz = bf::file_size(path_);
-            size_t total_result_sz = 0;
-
-            std::fstream f(path, std::fstream::binary | std::fstream::in | std::fstream::out);
-
-            std::string rest;
-
-            auto write_wrapper = [&f, &total_result_sz](const char* data, size_t sz) {
-                if (sz > 0)
-                {
-                    f.write(data, sz);
-                    SSL_HELPERS_ASSERT(!f.bad(), strerror(errno));
-                    total_result_sz += sz;
-                }
-            };
-
-            size_t pos_r = (pass_header_bytes > 0) ? pass_header_bytes : 0;
-            size_t pos_w = 0;
-
-            while (pos_r < total_input_sz)
-            {
-                f.seekg(pos_r);
                 std::vector<char> vchunk;
-                vchunk.resize(chunk_sz);
-                f.read(vchunk.data(), chunk_sz);
-                vchunk.resize(f.gcount());
+                vchunk.resize(sz);
+                file.stream().read(vchunk.data(), sz);
+                vchunk.resize(file.stream().gcount());
 
                 std::string chunk { vchunk.data(), vchunk.size() };
 
-                // Free space for rest bytes
-                size_t rest_sz = rest.size();
-                while (!chunk.empty() && chunk.size() % chunk_sz == 0 && rest_sz >= chunk_sz)
+                input_sz -= chunk.size();
+                return chunk;
+            };
+            auto write_wrapper = [&](const std::string& data) {
+                if (data.size() > 0)
                 {
-                    std::vector<char> vchunk_;
-                    vchunk_.resize(chunk_sz);
-                    f.read(vchunk_.data(), chunk_sz);
-                    vchunk_.resize(f.gcount());
-
-                    if (vchunk_.empty())
-                        break;
-
-                    chunk.append(vchunk_.data(), vchunk_.size());
-                    rest_sz -= vchunk_.size();
+                    file.stream().write(data.data(), data.size());
+                    SSL_HELPERS_ASSERT(!file.stream().bad(), strerror(errno));
+                    total_output_sz += data.size();
                 }
-
-                if (!f.eof())
+            };
+            auto write_to_available_space = [write_wrapper](const size_t pos_r, const size_t pos_w, const std::string& data) -> std::string {
+                auto sz = data.size();
+                auto left = pos_r - pos_w;
+                if (left >= sz)
+                    write_wrapper(data);
+                else
                 {
-                    pos_r = f.tellg();
+                    write_wrapper(data.substr(0, left));
+                    return data.substr(left);
+                }
+                return {};
+            };
+
+            size_t pos_r = 0;
+            if (!header.empty())
+            {
+                auto actual_header = read_wrapper(header.size());
+
+                SSL_HELPERS_ASSERT(actual_header == header && file && input_sz > 0, "Invalid file format");
+
+                pos_r = file.stream().tellg();
+            }
+            size_t pos_w = 0;
+
+            std::string rest;
+
+            while (input_sz > 0)
+            {
+                file.stream().seekg(pos_r);
+                auto input_chunk = read_wrapper(chunk_sz);
+
+                if (!file.stream().eof())
+                {
+                    pos_r = file.stream().tellg();
                 }
                 else
                 {
                     pos_r = total_input_sz;
                     // Restore stream state if previous read reached EOF
-                    f.clear();
+                    file.stream().clear();
                 }
-                f.seekg(pos_w);
+                file.stream().seekg(pos_w);
 
-                // Write rest bytes
                 if (!rest.empty())
                 {
-                    write_wrapper(rest.data(), rest.size());
-                    rest.resize(0);
-                    pos_w = f.tellg();
+                    rest = write_to_available_space(pos_r, pos_w, rest);
+                    pos_w = file.stream().tellg();
                 }
 
-                if (chunk.empty())
-                    break;
+                auto output_chunk = modification_rule(input_chunk, !input_sz);
+                SSL_HELPERS_ASSERT(!output_chunk.empty(), "Lost data");
 
-                auto chunk_ = modification_rule(chunk, pos_w);
-                SSL_HELPERS_ASSERT(!chunk_.empty(), "Empty modification");
-                auto result_sz = chunk_.size();
-                auto left = pos_r - pos_w;
-                if (left >= result_sz)
-                    write_wrapper(chunk_.data(), chunk_.size());
-                else
-                {
-                    write_wrapper(chunk_.substr(0, left).data(), left);
-                    rest = chunk_.substr(left);
-                }
-                pos_w = f.tellg();
+                rest.append(write_to_available_space(pos_r, pos_w, output_chunk));
+                pos_w = file.stream().tellg();
             }
 
             if (!rest.empty())
             {
-                f.clear();
-                f.seekg(total_result_sz);
-                write_wrapper(rest.data(), rest.size());
+                file.stream().seekg(total_output_sz);
+                write_wrapper(rest);
             }
-            else if (total_input_sz != total_result_sz)
+            else if (input_sz != total_output_sz)
             {
-                bf::resize_file(path_, total_result_sz);
+                file.resize(total_output_sz);
             }
-            f.close();
 
-            return std::make_pair(total_input_sz, total_result_sz);
+            return std::make_pair(total_input_sz, total_output_sz);
         }
         catch (std::exception& e)
         {

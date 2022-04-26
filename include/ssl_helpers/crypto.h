@@ -129,14 +129,16 @@ std::string aes_decrypt(const context&,
 
 std::string aes_encrypt_file(const context& ctx,
                              const std::string& path, const std::string& key,
-                             const std::string& marker = {});
+                             const std::string& marker = {},
+                             bool save_tag_to_file = false);
 
 // Decrypt file.
 
 void aes_decrypt_file(const context& ctx,
                       const std::string& path, const std::string& key,
                       const std::string& marker = {},
-                      const std::string& tag = {});
+                      const std::string& tag = {},
+                      bool read_tag_from_file = false);
 
 
 // 'Flip/Flap' technique to transfer both encrypted data and key through unencrypted network.
