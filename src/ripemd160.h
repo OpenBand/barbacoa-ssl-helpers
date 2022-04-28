@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include <openssl/ripemd.h>
 
-#include <string>
 
 namespace ssl_helpers {
 namespace impl {

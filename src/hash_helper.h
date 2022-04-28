@@ -3,8 +3,10 @@
 #include <cstdint>
 #include <cstring>
 
+
 namespace ssl_helpers {
 namespace impl {
+
     inline void shift_l(const uint8_t* in, uint8_t* out, size_t n, unsigned int i)
     {
         if (i < n)
@@ -66,5 +68,6 @@ namespace impl {
             out8[p] = (in8[p] >> i) | (in8[p - 1] << (8 - i));
         out8[p] = in8[p] >> i;
     }
+
 } // namespace impl
 } // namespace ssl_helpers

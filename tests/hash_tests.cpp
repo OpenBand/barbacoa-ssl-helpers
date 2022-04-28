@@ -1,13 +1,12 @@
-#include "tests_common.h"
+#include <fstream>
+
+#include <boost/filesystem.hpp>
 
 #include <ssl_helpers/hash.h>
 #include <ssl_helpers/encoding.h>
 
-#include <functional>
+#include "tests_common.h"
 
-#include <fstream>
-
-#include <boost/filesystem.hpp>
 
 namespace ssl_helpers {
 namespace tests {
@@ -44,8 +43,8 @@ namespace tests {
 
         boost::filesystem::path temp = create_binary_data_file(12 * 1024);
 
-        auto h_data = func(temp.generic_string(), 0);
-        auto h_data_short = func(temp.generic_string(), limit);
+        auto h_data = func(default_context_with_crypto_api(), temp.generic_string(), 0);
+        auto h_data_short = func(default_context_with_crypto_api(), temp.generic_string(), limit);
 
         BOOST_REQUIRE(!h_data.empty());
         BOOST_REQUIRE(!h_data_short.empty());
@@ -70,35 +69,35 @@ namespace tests {
     {
         print_current_test_name();
 
-        check_hash(create_ripemd160, "6568a1b5e4385b845f9fa8511645373a4e5e447f");
+        check_hash(create_ripemd160, "c30ff71b2127a55e987e7dfa39c205cea5744046");
     }
 
     BOOST_AUTO_TEST_CASE(sha256_check)
     {
         print_current_test_name();
 
-        check_hash(create_sha256, "b484737984805aa6909920b1686439f87ccbc584c5110f794071ceb87b9e11cc");
+        check_hash(create_sha256, "98bb864f36b4f16b6f5d0c281ab33bd75930453e10f2b51760272ad165222ddb");
     }
 
     BOOST_AUTO_TEST_CASE(sha512_check)
     {
         print_current_test_name();
 
-        check_hash(create_sha512, "54f9496e3bb62917967985dc0411f68a5d5c308dd1027ad7159af42e204fe22808c89b09f1d37a3f9a17029bac3b9c54c2f7ed920d6b4985ea7d80ae97533962");
+        check_hash(create_sha512, "dbbcf01693e2e4bb8f09713374b30d223a9f871aec6a3df213cc59f0078f62b01cb47a4dce6d3224015f58a7371404f88efae3a4c4c9bd363b0ee12844d067fe");
     }
 
     BOOST_AUTO_TEST_CASE(sha1_check)
     {
         print_current_test_name();
 
-        check_hash(create_sha1, "78211dbb455a4d67ccaf33780bb8eca83ee46578");
+        check_hash(create_sha1, "0f7fecd54fcf014dbeb9d05f66747e5a4174dd5a");
     }
 
     BOOST_AUTO_TEST_CASE(md5_check)
     {
         print_current_test_name();
 
-        check_hash(create_md5, "d4e2207f05e26f5953a741ed27f0b68b");
+        check_hash(create_md5, "faf3198c9294b938f32f43b20923378c");
     }
 
     BOOST_AUTO_TEST_CASE(pbkdf2_check)
@@ -107,7 +106,7 @@ namespace tests {
 
         const std::string salt { "Salt" };
 
-        check_hash(std::bind(create_pbkdf2_512, std::placeholders::_1, salt, std::placeholders::_2), "377101358e1386fc2a9d0231e0e0dc0e114f395b3c5dd786b5748a6e8a4607575dcc55dceeef8564ca07fa094b90cfd77cd7ae462ef41ac4a88fdf806ff3cdc2");
+        check_hash(std::bind(create_pbkdf2_512, std::placeholders::_1, salt, std::placeholders::_2), "482ad00a7009dc5f1706e9f86becaa0b1c5893e64b35ad2dcc67d5e9bb15fee331d594df9c1bb6f73ff5c67a6c66cc3bb43327f7de5556cd4267b652928224c4");
     }
 
     BOOST_AUTO_TEST_CASE(pbkdf2_check_details)

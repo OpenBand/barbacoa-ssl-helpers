@@ -1,7 +1,9 @@
 #pragma once
-#include <openssl/md5.h>
 
 #include <string>
+
+#include <openssl/md5.h>
+
 
 namespace ssl_helpers {
 namespace impl {

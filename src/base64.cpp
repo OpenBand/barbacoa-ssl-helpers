@@ -1,8 +1,8 @@
-#include "base64.h"
+#include <memory.h>
 
+#include "base64.h"
 #include "ssl_helpers_defines.h"
 
-#include <memory.h>
 
 namespace ssl_helpers {
 namespace impl {

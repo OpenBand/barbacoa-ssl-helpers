@@ -30,6 +30,15 @@ set(SSL_HELPERS_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/encoding.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/convert_helper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/crypto.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/openssl_crypto_api.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/aes256.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/crypto_stream_impl.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/shadowing.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/inplace.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/context.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dh.cpp"
 )
 file(GLOB_RECURSE SSL_HELPERS_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
@@ -81,6 +90,7 @@ if (SSL_HELPERS_BUILD_TESTS)
     set( Boost_USE_MULTITHREADED ON CACHE STRING "ON or OFF" )
 
     find_package(Boost ${BOOST_VERSION_MIN} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+    find_package(Threads REQUIRED)
 
     if(NOT Boost_FOUND)
         message(ERROR "Boost required for tests!")
@@ -95,6 +105,7 @@ if (SSL_HELPERS_BUILD_TESTS)
         target_link_libraries( ssl_helpers_tests
                                ssl-helpers
                                ${PLATFORM_SPECIFIC_LIBS}
+                               Threads::Threads
                                ${Boost_LIBRARIES})
     endif()
 endif()

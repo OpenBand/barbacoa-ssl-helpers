@@ -1,3 +1,8 @@
+#include <fstream>
+#include <vector>
+
+#include <openssl/evp.h> // PKCS5_PBKDF2_HMAC_SHA1
+
 #include <ssl_helpers/hash.h>
 
 #include "ssl_helpers_defines.h"
@@ -7,9 +12,6 @@
 #include "sha1.h"
 #include "md5.h"
 
-#include <fstream>
-
-#include <openssl/evp.h> //PKCS5_PBKDF2_HMAC_SHA1
 
 namespace ssl_helpers {
 
@@ -83,20 +85,20 @@ std::string create_hash(const std::string& data, const size_t limit)
 }
 
 template <typename HashType>
-std::string create_hash_from_file(const std::string& path, const size_t limit)
+std::string create_hash_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
     std::ifstream input(path, std::ifstream::binary);
 
     typename HashType::encoder encoder;
-    char buff[10 * 1024]; //a multiple of 2 and 16 and not too small (https://stackoverflow.com/questions/10698339/what-would-be-an-ideal-buffer-size)
+    std::vector<char> buff(ctx().file_buffer_size());
 
-    //start from 1 byte to read small files less than sizeof(buff)
-    for (std::streamsize bytes_read = 1; input.read(buff, sizeof(buff)) || bytes_read > 0;)
+    // Start from 1 byte to read small files less than sizeof(buff)
+    for (std::streamsize bytes_read = 1; input.read(buff.data(), buff.size()) || bytes_read > 0;)
     {
         bytes_read = input.gcount();
         if (bytes_read > 0)
         {
-            encoder.write(buff, static_cast<uint32_t>(bytes_read));
+            encoder.write(buff.data(), static_cast<uint32_t>(bytes_read));
         }
     }
     HashType h = encoder.result();
@@ -129,29 +131,29 @@ std::string create_md5(const std::string& data, const size_t limit)
     return create_hash<impl::md5>(data, limit);
 }
 
-std::string create_ripemd160_from_file(const std::string& path, const size_t limit)
+std::string create_ripemd160_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
-    return create_hash_from_file<impl::ripemd160>(path, limit);
+    return create_hash_from_file<impl::ripemd160>(ctx, path, limit);
 }
 
-std::string create_sha256_from_file(const std::string& path, const size_t limit)
+std::string create_sha256_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
-    return create_hash_from_file<impl::sha256>(path, limit);
+    return create_hash_from_file<impl::sha256>(ctx, path, limit);
 }
 
-std::string create_sha512_from_file(const std::string& path, const size_t limit)
+std::string create_sha512_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
-    return create_hash_from_file<impl::sha512>(path, limit);
+    return create_hash_from_file<impl::sha512>(ctx, path, limit);
 }
 
-std::string create_sha1_from_file(const std::string& path, const size_t limit)
+std::string create_sha1_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
-    return create_hash_from_file<impl::sha1>(path, limit);
+    return create_hash_from_file<impl::sha1>(ctx, path, limit);
 }
 
-std::string create_md5_from_file(const std::string& path, const size_t limit)
+std::string create_md5_from_file(const context& ctx, const std::string& path, const size_t limit)
 {
-    return create_hash_from_file<impl::md5>(path, limit);
+    return create_hash_from_file<impl::md5>(ctx, path, limit);
 }
 
 std::string create_pbkdf2(const std::string& password, const std::string& salt, int iterations, int key_size)
@@ -176,4 +178,5 @@ std::string create_pbkdf2_512(const std::string& password, const std::string& sa
 
     return { h.data(), sz };
 }
+
 } // namespace ssl_helpers

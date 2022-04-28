@@ -1,5 +1,3 @@
-#include "convert_helper.h"
-
 #if defined(SSL_HELPERS_PLATFORM_MOBILE)
 #include <cstdlib>
 #include <ctime>
@@ -10,6 +8,9 @@
 #include <sstream>
 #endif //< !SSL_HELPERS_PLATFORM_MOBILE
 #include <chrono>
+
+#include "convert_helper.h"
+
 
 namespace ssl_helpers {
 namespace impl {

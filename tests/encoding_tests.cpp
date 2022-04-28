@@ -1,6 +1,7 @@
+#include <ssl_helpers/encoding.h>
+
 #include "tests_common.h"
 
-#include <ssl_helpers/encoding.h>
 
 namespace ssl_helpers {
 namespace tests {
@@ -17,7 +18,7 @@ namespace tests {
 
         DUMP_STR(hex_data);
 
-        BOOST_CHECK_EQUAL(hex_data, "7465737401020074657374");
+        BOOST_CHECK_EQUAL(hex_data, "74657374007465737400746573");
 
         BOOST_CHECK_EQUAL(from_hex(hex_data), data);
     }
@@ -32,7 +33,7 @@ namespace tests {
 
         DUMP_STR(base58_data);
 
-        BOOST_CHECK_EQUAL(base58_data, "Vs5LyQWRVPGQB4P");
+        BOOST_CHECK_EQUAL(base58_data, "AhJcBpYgvLmvXeAspE");
 
         BOOST_CHECK_EQUAL(from_base58(base58_data), data);
     }
@@ -56,6 +57,29 @@ namespace tests {
         BOOST_CHECK_EQUAL(base64_data, "ew0KCSJSZXNvdXJjZXMiOg0KCXsNCgkJImdvbGQiOiAzNCwNCgkJIndhdGVyIjogNTANCgl9DQp9");
 
         BOOST_CHECK_EQUAL(from_base64(base64_data), data);
+    }
+
+    BOOST_AUTO_TEST_CASE(printable_check)
+    {
+        print_current_test_name();
+
+        std::string data("\x00Hi", 3);
+
+        BOOST_CHECK_EQUAL(to_printable(data), std::string(".Hi"));
+
+        data = std::string("1\x03\x03\x03\\23", 6);
+
+        BOOST_CHECK_EQUAL(to_printable(data), std::string("1...\\2"));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '*'), std::string("1***\\2"));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '*', "\\"), std::string("1****2"));
+
+        data = std::string("Hi\t!\n");
+
+        BOOST_CHECK_EQUAL(to_printable(data, '.'), std::string("Hi.!."));
+
+        BOOST_CHECK_EQUAL(to_printable(data, '.', {}), std::string("Hi\t!\n"));
     }
 
     BOOST_AUTO_TEST_SUITE_END()

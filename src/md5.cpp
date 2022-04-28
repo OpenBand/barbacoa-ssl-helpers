@@ -1,16 +1,17 @@
-#include "md5.h"
+#include <cstring>
+#include <cmath>
 
 #include "convert_helper.h"
 #include "ssl_helpers_defines.h"
 #include "hash_helper.h"
 
-#include <string.h>
-#include <cmath>
+#include "md5.h"
+
 
 namespace ssl_helpers {
 namespace impl {
 
-    md5::md5() { memset(_hash, 0, sizeof(_hash)); }
+    md5::md5() { std::memset(_hash, 0, sizeof(_hash)); }
     md5::md5(const std::string& hex_str)
     {
         from_hex(hex_str, reinterpret_cast<char*>(_hash), sizeof(_hash));
@@ -73,23 +74,23 @@ namespace impl {
     }
     bool operator>=(const md5& h1, const md5& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) >= 0;
     }
     bool operator>(const md5& h1, const md5& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) > 0;
     }
     bool operator<(const md5& h1, const md5& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) < 0;
     }
     bool operator!=(const md5& h1, const md5& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) != 0;
     }
     bool operator==(const md5& h1, const md5& h2)
     {
-        return memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
+        return std::memcmp(h1._hash, h2._hash, sizeof(h1._hash)) == 0;
     }
 
 } // namespace impl

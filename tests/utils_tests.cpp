@@ -1,8 +1,9 @@
-#include "tests_common.h"
+#include <boost/endian/conversion.hpp>
 
 #include <ssl_helpers/utils.h>
 
-#include <boost/endian/conversion.hpp>
+#include "tests_common.h"
+
 
 namespace ssl_helpers {
 namespace tests {
