@@ -25,7 +25,7 @@ namespace {
         case config::EC_GROUP_DOMAIN_secp521r1:
             return NID_secp521r1;
         default:
-            SSL_HELPERS_ASSERT(false, "Invalid EC Group Domain");
+            SSL_HELPERS_ERROR("Invalid EC Group Domain");
             return -1;
         }
     }

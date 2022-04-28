@@ -35,7 +35,7 @@ aes_encryption_stream::aes_encryption_stream(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -51,7 +51,7 @@ std::string aes_encryption_stream::start(const std::string& key, const std::stri
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -64,7 +64,7 @@ std::string aes_encryption_stream::encrypt(const std::string& plain_chunk)
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -77,7 +77,7 @@ aes_tag_type aes_encryption_stream::finalize()
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -94,7 +94,7 @@ aes_decryption_stream::aes_decryption_stream(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -110,7 +110,7 @@ void aes_decryption_stream::start(const std::string& key, const std::string& add
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -122,7 +122,7 @@ std::string aes_decryption_stream::decrypt(const std::string& cipher_chunk)
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -135,7 +135,7 @@ void aes_decryption_stream::finalize(const aes_tag_type& tag)
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -147,7 +147,7 @@ void aes_decryption_stream::finalize()
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -167,7 +167,7 @@ salted_key_type aes_create_salted_key(const context& ctx, const std::string& key
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
@@ -184,7 +184,7 @@ std::string aes_get_salted_key(const std::string& key, const std::string& salt)
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
@@ -208,7 +208,7 @@ std::string aes_encrypt(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
@@ -234,7 +234,7 @@ std::string aes_encrypt(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
@@ -253,7 +253,7 @@ std::string aes_decrypt(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
@@ -278,10 +278,14 @@ std::string aes_decrypt(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 
     return {};
+}
+
+namespace {
+    constexpr auto AES_TAG_SZ = aes_tag_type {}.size();
 }
 
 std::string aes_encrypt_file(const context& ctx,
@@ -319,13 +323,13 @@ std::string aes_encrypt_file(const context& ctx,
 
         impl::file_context f(path);
         auto result = impl::modify_binary_inplace(f, ctx().file_buffer_size(), modification_rule, {});
-        SSL_HELPERS_ASSERT(result.second = result.first + add.size());
+        SSL_HELPERS_ASSERT(result.second = result.first + add.size() + ((save_tag_to_file) ? AES_TAG_SZ : 0));
 
         return tag;
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -340,8 +344,6 @@ void aes_decrypt_file(const context& ctx,
     try
     {
         SSL_HELPERS_ASSERT(ctx().is_enabled_libcrypto_api(), "Libcrypto API required");
-
-        constexpr auto AES_TAG_SZ = aes_tag_type {}.size();
 
         aes_decryption_stream stream { ctx, key, add };
         bool started = false;
@@ -410,11 +412,11 @@ void aes_decrypt_file(const context& ctx,
         }
 
         auto result = impl::modify_binary_inplace(f, chunk_sz, modification_rule, add);
-        SSL_HELPERS_ASSERT(result.second = result.first - add.size());
+        SSL_HELPERS_ASSERT(result.second == result.first - add.size() - ((read_tag_from_file) ? AES_TAG_SZ : 0));
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
 }
 
@@ -475,7 +477,7 @@ flip_session_type aes_ecnrypt_flip(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }
@@ -556,7 +558,7 @@ std::string aes_decrypt_flip(const context& ctx,
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }

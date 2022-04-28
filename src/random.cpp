@@ -61,7 +61,7 @@ uint64_t create_random(const context& ctx, const uint64_t offset)
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return 0;
 }
@@ -84,7 +84,7 @@ std::string create_random_string(const context& ctx, const size_t size, bool fix
     }
     catch (std::exception& e)
     {
-        SSL_HELPERS_ASSERT(false, e.what());
+        SSL_HELPERS_ERROR(e.what());
     }
     return {};
 }

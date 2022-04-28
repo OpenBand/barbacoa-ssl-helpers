@@ -157,7 +157,7 @@ namespace impl {
         }
         catch (std::exception& e)
         {
-            SSL_HELPERS_ASSERT(false, e.what());
+            SSL_HELPERS_ERROR(e.what());
         }
 
         return std::make_pair(0, 0);
